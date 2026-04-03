@@ -247,6 +247,53 @@ table.qt tbody tr:hover td{background:#fafafa}
   .btn{min-height:44px}
   .pill{min-height:44px}
 }
+
+/* ── TIPO CLIENTE STRIP ─────────────────────────────────────── */
+.tipo-strip{margin-bottom:12px}
+.tipo-strip .toggle{margin-bottom:0}
+.tipo-strip .card-bd{padding:12px 14px}
+
+/* ── CARD PRINCIPALE (Aggiungi Lavorazione) ─────────────────── */
+.card-main{border-top:3px solid var(--teal)}
+.card-main .card-hd{background:var(--teal-ll)}
+.card-main .card-hd h3{color:var(--teal-d);font-size:14px}
+
+/* ── ACCORDION Dati cliente ──────────────────────────────────── */
+.acc-card{overflow:visible}
+.acc-card .card-hd,.acc-card>.card-bd{display:none} /* non usati */
+.acc-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px;background:transparent;border:none;cursor:pointer;
+  font-size:13px;font-weight:600;color:var(--g700);text-align:left;
+  transition:background .15s;border-radius:10px;
+}
+.acc-btn:hover{background:var(--g100)}
+.acc-btn.open{color:var(--teal-d);background:var(--teal-ll);border-radius:10px 10px 0 0}
+.acc-icon{font-size:12px;transition:transform .2s;flex-shrink:0;margin-left:8px;color:var(--g500)}
+.acc-btn.open .acc-icon{transform:rotate(90deg);color:var(--teal-d)}
+.acc-body{padding:14px 18px 16px;border-top:1px solid var(--teal-l)}
+
+/* ── STICKY PDF BAR ──────────────────────────────────────────── */
+.sticky-pdf{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--g900);
+  box-shadow:0 -2px 16px rgba(0,0,0,.3);
+  padding:10px 20px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+  transform:translateY(100%);
+  transition:transform .25s ease;
+}
+.sticky-pdf.visible{transform:translateY(0)}
+.sticky-pdf-inner{
+  max-width:1280px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.sticky-pdf-info{color:var(--g300);font-size:13px;line-height:1.3}
+.sticky-pdf-info strong{color:#fff;display:block;font-size:14px}
+.sticky-pdf-btn{min-height:46px;font-size:14px;padding:10px 22px;white-space:nowrap}
+/* compensa l'altezza della barra sticky quando è visibile */
+body.has-sticky .main{padding-bottom:80px}
+@media(max-width:767px){body.has-sticky .main{padding-bottom:90px}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -262,7 +309,6 @@ table.qt tbody tr:hover td{background:#fafafa}
   </div>
   <div class="hdr-btns">
     <button class="btn btn-gray" onclick="showHistory()">&#9776; <span class="btn-label">Storico</span></button>
-    <button class="btn btn-gray" onclick="handlePrint()">&#9113; <span class="btn-label">PDF</span></button>
     <button class="btn btn-red" onclick="confirmReset()">&#10005; <span class="btn-label">Reset</span></button>
   </div>
 </header>
@@ -270,20 +316,20 @@ table.qt tbody tr:hover td{background:#fafafa}
 <div class="main">
   <!-- LEFT PANEL -->
   <div class="left-panel no-print">
-    <div class="card">
-      <div class="card-hd"><h3>Tipo Cliente</h3></div>
+
+    <!-- 1. Tipo cliente: strip compatta -->
+    <div class="card tipo-strip">
       <div class="card-bd">
         <div class="toggle">
           <button id="btn-studi" class="on" onclick="setClient('studi')">Studi Odontoiatrici<br><small>Listino Rev.08</small></button>
           <button id="btn-lab" onclick="setClient('lab')">Laboratori Odontotecnici<br><small>Listino Lab Rev.03</small></button>
         </div>
-        <div class="fg"><label>Cliente <span style="font-weight:400;color:var(--g500)">(opzionale)</span></label><input type="text" id="inp-cliente" placeholder="Nome studio / laboratorio" oninput="S.cliente=this.value"></div>
-        <div class="fg"><label>Paziente / Note <span style="font-weight:400;color:var(--g500)">(opzionale)</span></label><textarea id="inp-paziente" placeholder="Nome paziente, riferimento caso..." oninput="S.paziente=this.value"></textarea></div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-hd"><h3>Aggiungi Lavorazione</h3></div>
+    <!-- 2. Aggiungi Lavorazione — card principale in evidenza -->
+    <div class="card card-main">
+      <div class="card-hd"><h3>Aggiungi lavorazione</h3></div>
       <div class="card-bd">
         <div class="fg"><label>Categoria</label>
           <select id="sel-cat" onchange="onCatChange()">
@@ -301,6 +347,19 @@ table.qt tbody tr:hover td{background:#fafafa}
         </div>
       </div>
     </div>
+
+    <!-- 3. Dati cliente: accordion chiuso di default -->
+    <div class="card acc-card">
+      <button class="acc-btn" id="acc-btn-dati" onclick="toggleAccordion('acc-btn-dati','acc-body-dati')">
+        <span>Dati cliente <span style="font-weight:400;opacity:.65">(opzionale)</span></span>
+        <span class="acc-icon" id="acc-icon-dati">&#9654;</span>
+      </button>
+      <div id="acc-body-dati" class="acc-body" style="display:none">
+        <div class="fg"><label>Cliente</label><input type="text" id="inp-cliente" placeholder="Nome studio / laboratorio" oninput="S.cliente=this.value"></div>
+        <div class="fg" style="margin-bottom:0"><label>Paziente / Note</label><textarea id="inp-paziente" placeholder="Nome paziente, riferimento caso..." oninput="S.paziente=this.value"></textarea></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- RIGHT PANEL -->
@@ -344,6 +403,14 @@ table.qt tbody tr:hover td{background:#fafafa}
         <div id="totals-body"></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- STICKY PDF BAR -->
+<div class="sticky-pdf no-print" id="sticky-pdf">
+  <div class="sticky-pdf-inner">
+    <div class="sticky-pdf-info" id="sticky-pdf-info"></div>
+    <button class="btn btn-teal sticky-pdf-btn" onclick="handlePrint()">&#9113;&nbsp; Esporta PDF</button>
   </div>
 </div>
 
@@ -1157,6 +1224,7 @@ function renderQuote(){
     </tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
+  updateStickyBar();
 }
 
 /* =====================================================================
@@ -1231,8 +1299,13 @@ function doReset(){
   document.getElementById('price-prev').style.display='none';
   document.getElementById('btn-cancel').style.display='none';
   document.getElementById('btn-add').textContent='+ Aggiungi al preventivo';
+  // chiudi accordion dati cliente
+  const ab=document.getElementById('acc-body-dati');
+  const abtn=document.getElementById('acc-btn-dati');
+  if(ab){ ab.style.display='none'; }
+  if(abtn){ abtn.classList.remove('open'); }
   S.quoteNum=Math.floor(Date.now()/1000);
-  renderQuote();renderTotals();
+  renderQuote();renderTotals();updateStickyBar();
   closeModal('modal-reset');
 }
 
@@ -1425,9 +1498,40 @@ function doLoadHist(){
   document.getElementById('sel-cat').value='';
   document.getElementById('dyn-form').innerHTML='';
   document.getElementById('price-prev').style.display='none';
-  renderQuote();renderTotals();
+  renderQuote();renderTotals();updateStickyBar();
   closeModal('modal-load-hist');
   _pendingLoad=null;
+}
+
+/* =====================================================================
+   ACCORDION
+===================================================================== */
+function toggleAccordion(btnId, bodyId){
+  const btn  = document.getElementById(btnId);
+  const body = document.getElementById(bodyId);
+  if(!btn||!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  btn.classList.toggle('open', !isOpen);
+}
+
+/* =====================================================================
+   STICKY PDF BAR
+===================================================================== */
+function updateStickyBar(){
+  const bar  = document.getElementById('sticky-pdf');
+  const info = document.getElementById('sticky-pdf-info');
+  if(!bar) return;
+  const n = S.items.length;
+  if(n === 0){
+    bar.classList.remove('visible');
+    document.body.classList.remove('has-sticky');
+  } else {
+    const imp = S.items.reduce((s,i)=>s+i.total,0);
+    info.innerHTML = `<strong>${n} voce${n>1?'':''}${n>1?' aggiunte':' aggiunta'}</strong>Imponibile: ${eur(imp)}`;
+    bar.classList.add('visible');
+    document.body.classList.add('has-sticky');
+  }
 }
 
 /* =====================================================================
