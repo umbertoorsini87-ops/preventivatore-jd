@@ -303,6 +303,17 @@ table.pkg-table tr:last-child td{border-bottom:none}
 .pkg-hist-item{padding:12px 14px;border:1px solid var(--g200);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .15s}
 .pkg-hist-item:hover{border-color:var(--teal);background:var(--teal-ll)}
 
+/* RIGHE OFFERTA — card verticali */
+.pkg-riga-card{background:var(--white);border:1.5px solid var(--g200);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.pkg-riga-card:last-child{margin-bottom:0}
+.pkg-riga-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px}
+.pkg-riga-num{font-size:11px;color:var(--g500);margin-right:4px}
+.pkg-riga-desc{font-size:13px;line-height:1.3}
+.pkg-riga-listino{font-size:12px;color:var(--g500);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--g100)}
+.pkg-riga-semafororow{display:flex;align-items:center;gap:8px;padding:8px 0 2px;border-top:1px solid var(--g100);margin-top:6px;flex-wrap:wrap}
+.pkg-riga-sconto{font-size:13px;font-weight:700;color:var(--g700)}
+.pkg-riga-minprice{font-size:11px;color:var(--g500);margin-top:4px;font-style:italic}
+
 @media(max-width:600px){
   .pkg-summary{grid-template-columns:1fr}
   table.pkg-table{font-size:12px}
@@ -1880,6 +1891,26 @@ function pkgUpdateVolume(id, val){
   if(r){ r.volume = Math.max(1, parseInt(val)||1); renderPkgSummaryOnly(); updateStickyPkg(); }
 }
 
+// Aggiorna offerta inline senza re-render completo → il focus rimane nell'input
+function pkgUpdateOffertaInline(id, val, scontoId, dotId, lblId){
+  const r = P.pkg.righe.find(r=>r.id===id);
+  if(!r) return;
+  r.offerta = parseFloat(val)||0;
+  const disc = rigaSconto(r);
+  const sfClass = rigaSemaforoClass(r);
+  const dotColor = sfClass==='sf-green'?'#22c55e':sfClass==='sf-yellow'?'#eab308':'#ef4444';
+  const sfTextClass = sfClass==='sf-green'?'sf-label-green':sfClass==='sf-yellow'?'sf-label-yellow':'sf-label-red';
+  const sfLabelTxt = sfClass==='sf-green'?'Sostenibile':sfClass==='sf-yellow'?'Attenzione':'Non sostenibile';
+  const scontoEl = document.getElementById(scontoId);
+  const dotEl    = document.getElementById(dotId);
+  const lblEl    = document.getElementById(lblId);
+  if(scontoEl) scontoEl.textContent = disc.toFixed(1)+'% sconto';
+  if(dotEl)    dotEl.style.background = dotColor;
+  if(lblEl){   lblEl.className = sfTextClass; lblEl.textContent = sfLabelTxt; }
+  renderPkgSummaryOnly();
+  updateStickyPkg();
+}
+
 // Re-renderizza solo la card riepilogo senza distruggere il form
 function renderPkgSummaryOnly(){
   const el = document.getElementById('pkg-summary-card');
@@ -1936,66 +1967,50 @@ function renderPkgEdit(){
     </div>
   </div>`;
 
-  // Card righe pacchetto
+  // Card righe pacchetto — layout verticale a card, tutto visibile senza scorrere
   let righeHtml = '';
   if(P.pkg.righe.length === 0){
     righeHtml = `<div class="empty" style="padding:24px"><p>Nessuna riga. Aggiungi voci usando il modulo qui sotto.</p></div>`;
   } else {
-    const rows = P.pkg.righe.map(r=>{
+    righeHtml = P.pkg.righe.map((r, idx)=>{
       const sfClass = rigaSemaforoClass(r);
-      const sfLabel = sfClass==='sf-green' ? '<span class="sf-label-green">Sostenibile</span>'
-                    : sfClass==='sf-yellow' ? '<span class="sf-label-yellow">Attenzione</span>'
-                    : '<span class="sf-label-red">Non sostenibile</span>';
+      const sfTextClass = sfClass==='sf-green'?'sf-label-green':sfClass==='sf-yellow'?'sf-label-yellow':'sf-label-red';
+      const sfLabel = sfClass==='sf-green'?'Sostenibile':sfClass==='sf-yellow'?'Attenzione':'Non sostenibile';
+      const dotColor = sfClass==='sf-green'?'#22c55e':sfClass==='sf-yellow'?'#eab308':'#ef4444';
       const disc = rigaSconto(r);
       const prezzoMin = rigaPrezzoMin(r);
-      return `<tr>
-        <td>
-          <div style="display:flex;align-items:center;gap:8px" class="${sfClass}">
-            <span class="sf-dot"></span>
-            ${sfLabel}
+      return `
+      <div class="pkg-riga-card">
+        <div class="pkg-riga-hd">
+          <div>
+            <span class="pkg-riga-num">#${idx+1}</span>
+            <strong class="pkg-riga-desc">${escHtml(r.desc)}</strong>
+            <span style="font-size:11px;color:var(--g500);margin-left:6px">${r.clientType==='studi'?'Studi':'Lab'}</span>
           </div>
-          <div class="pkg-min-price">Min. cons.: ${eur(prezzoMin)}</div>
-        </td>
-        <td>
-          <div style="font-weight:600;font-size:13px">${escHtml(r.desc)}</div>
-          <div style="font-size:11px;color:var(--g500)">${r.clientType==='studi'?'Studi':'Lab'}</div>
-        </td>
-        <td class="num-col">${eur(r.listino)}</td>
-        <td class="num-col">
-          <input type="number" min="1" step="1" value="${r.volume}"
-            style="width:70px;text-align:right;padding:4px 6px;font-size:13px"
-            onchange="pkgUpdateVolume('${r.id}',this.value)">
-        </td>
-        <td class="num-col">
-          <input type="number" min="0" step="0.01" value="${r.offerta.toFixed(2)}"
-            style="width:90px;text-align:right;padding:4px 6px;font-size:13px"
-            onchange="pkgUpdateOfferta('${r.id}',this.value)">
-        </td>
-        <td class="num-col ${disc>P.soglia?'sf-label-red':disc>P.soglia-5?'sf-label-yellow':'sf-label-green'}" style="font-weight:700">
-          ${disc.toFixed(1)}%
-        </td>
-        <td class="num-col">${eur(prezzoMin)}</td>
-        <td class="act-col">
-          <button class="btn btn-red btn-sm" onclick="pkgRemoveRiga('${r.id}')" title="Elimina">&#215;</button>
-        </td>
-      </tr>`;
+          <button class="btn btn-red btn-sm" onclick="pkgRemoveRiga('${r.id}')" title="Elimina riga">&#215;</button>
+        </div>
+        <div class="pkg-riga-listino">P. Listino: <strong>${eur(r.listino)}</strong></div>
+        <div class="row2" style="margin-bottom:4px">
+          <div class="fg" style="margin-bottom:0">
+            <label>Prezzo offerta (€)</label>
+            <input type="number" min="0" step="0.01" value="${r.offerta.toFixed(2)}"
+              style="font-size:16px;font-weight:700"
+              oninput="pkgUpdateOffertaInline('${r.id}',this.value,'sconto-${r.id}','sfdot-${r.id}','sflbl-${r.id}')">
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label>Volume / mese</label>
+            <input type="number" min="1" step="1" value="${r.volume}"
+              oninput="pkgUpdateVolume('${r.id}',this.value)">
+          </div>
+        </div>
+        <div class="pkg-riga-semafororow">
+          <span class="sf-dot" id="sfdot-${r.id}" style="background:${dotColor}"></span>
+          <span class="pkg-riga-sconto" id="sconto-${r.id}">${disc.toFixed(1)}%&nbsp;sconto</span>
+          <span class="${sfTextClass}" id="sflbl-${r.id}">${sfLabel}</span>
+        </div>
+        <div class="pkg-riga-minprice">Prezzo minimo consigliato: <strong>${eur(prezzoMin)}</strong></div>
+      </div>`;
     }).join('');
-
-    righeHtml = `<div style="overflow-x:auto">
-      <table class="pkg-table">
-        <thead><tr>
-          <th>Semaforo</th>
-          <th>Lavorazione</th>
-          <th class="num-col">P. Listino</th>
-          <th class="num-col">Vol./mese</th>
-          <th class="num-col">P. Offerta</th>
-          <th class="num-col">Sconto %</th>
-          <th class="num-col">P. Min. Cons.</th>
-          <th></th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
   }
 
   const cardRighe = `
@@ -2004,7 +2019,7 @@ function renderPkgEdit(){
       <h3>Righe offerta</h3>
       <span style="font-size:12px;color:var(--g500)">${P.pkg.righe.length} riga/e</span>
     </div>
-    <div class="card-bd" style="padding:0 0 8px">
+    <div class="card-bd">
       ${righeHtml}
     </div>
   </div>`;
@@ -2031,34 +2046,22 @@ function renderPkgEdit(){
 
 function buildPkgSummaryHtml(){
   const s = pkgSummary();
-  const scontoClass = s.scontoMedio > P.soglia ? 'warn' : '';
+  const scontoClass = s.scontoMedio > P.soglia ? 'warn' : (s.scontoMedio > P.soglia-5 ? '' : '');
   return `
     <div class="card-hd"><h3>Riepilogo pacchetto</h3></div>
     <div class="card-bd">
-      <div class="pkg-summary">
+      <div class="pkg-summary" style="grid-template-columns:1fr 1fr 1fr">
         <div class="pkg-sum-card highlight">
           <div class="val">${eur(s.totMensile)}</div>
-          <div class="lbl">Ricavo mensile stimato</div>
+          <div class="lbl">Totale mensile stimato</div>
         </div>
         <div class="pkg-sum-card highlight">
           <div class="val">${eur(s.totAnnuo)}</div>
-          <div class="lbl">Ricavo annuo stimato (×12)</div>
-        </div>
-        <div class="pkg-sum-card">
-          <div class="val">${eur(s.totListMensile)}</div>
-          <div class="lbl">Ricavo a listino / mese</div>
-        </div>
-        <div class="pkg-sum-card">
-          <div class="val">${eur(s.totListAnnuo)}</div>
-          <div class="lbl">Ricavo a listino / anno</div>
+          <div class="lbl">Totale annuo stimato (×12)</div>
         </div>
         <div class="pkg-sum-card ${scontoClass}">
           <div class="val">${s.scontoMedio.toFixed(1)}%</div>
-          <div class="lbl">Sconto medio${s.scontoMedio>P.soglia?' ⚠ Supera soglia':''}</div>
-        </div>
-        <div class="pkg-sum-card ${s.valoreTavolo>0?'warn':''}">
-          <div class="val">${eur(s.valoreTavolo)}</div>
-          <div class="lbl">Valore lasciato sul tavolo / anno</div>
+          <div class="lbl">Sconto medio${s.scontoMedio>P.soglia?'&nbsp;&#9888; Supera soglia':''}</div>
         </div>
       </div>
     </div>`;
@@ -2232,14 +2235,23 @@ function exportPkgPdf(){
   }
   y+=2; hline(y,DARK); y+=5;
 
-  // TABLE HEADER
-  const C2={desc:{x:ML+2,w:72},unit:{x:ML+75,w:26},vol:{x:ML+102,w:20},tot:{x:ML+123,w:cW-125}};
+  // TABLE HEADER — colonne: Lavorazione | P.Listino | P.Offerta | Sconto% | Vol. | Tot.Mensile
+  const C2={
+    desc:   {x:ML+2,   w:52},
+    list:   {x:ML+55,  w:24},
+    off:    {x:ML+80,  w:24},
+    disc:   {x:ML+105, w:16},
+    vol:    {x:ML+122, w:14},
+    tot:    {x:ML+137, w:cW-139}
+  };
   fill(ML,y,cW,7,LIGHT);
-  sf('bold',8); tc(GRAY);
-  doc.text('Lavorazione',C2.desc.x,y+5);
-  doc.text('P. Offerta Unit.',C2.unit.x+C2.unit.w,y+5,{align:'right'});
-  doc.text('Vol./mese',C2.vol.x+C2.vol.w,y+5,{align:'right'});
-  doc.text('Tot. Mensile',C2.tot.x+C2.tot.w,y+5,{align:'right'});
+  sf('bold',7); tc(GRAY);
+  doc.text('Lavorazione', C2.desc.x, y+5);
+  doc.text('P. Listino',  C2.list.x+C2.list.w, y+5, {align:'right'});
+  doc.text('P. Offerta',  C2.off.x+C2.off.w,   y+5, {align:'right'});
+  doc.text('Sconto',      C2.disc.x+C2.disc.w,  y+5, {align:'right'});
+  doc.text('Vol.',        C2.vol.x+C2.vol.w,    y+5, {align:'right'});
+  doc.text('Tot. Mens.',  C2.tot.x+C2.tot.w,    y+5, {align:'right'});
   y+=8;
 
   // TABLE ROWS
@@ -2247,17 +2259,28 @@ function exportPkgPdf(){
   P.pkg.righe.forEach((r,i)=>{
     newPageIfNeeded(10);
     const totRiga = r.offerta * r.volume;
+    const disc = r.listino>0 ? (1 - r.offerta/r.listino)*100 : 0;
     grandTotMens += totRiga;
-    if(i%2===0) fill(ML,y,cW,8,[249,250,251]);
     const lines = doc.splitTextToSize(r.desc, C2.desc.w-2);
     const rh = Math.max(8, lines.length*4.5+2);
     newPageIfNeeded(rh);
     if(i%2===0) fill(ML,y,cW,rh,[249,250,251]);
-    sf('normal',8); tc(DARK);
+    sf('normal',7); tc(DARK);
     doc.text(lines, C2.desc.x, y+5);
-    doc.text(eur(r.offerta), C2.unit.x+C2.unit.w, y+5, {align:'right'});
-    doc.text(String(r.volume), C2.vol.x+C2.vol.w, y+5, {align:'right'});
-    sf('bold',8); doc.text(eur(totRiga), C2.tot.x+C2.tot.w, y+5, {align:'right'});
+    tc(GRAY);
+    doc.text(eur(r.listino),        C2.list.x+C2.list.w, y+5, {align:'right'});
+    tc(DARK);
+    sf('bold',7);
+    doc.text(eur(r.offerta),        C2.off.x+C2.off.w,   y+5, {align:'right'});
+    // sconto colorato
+    const discColor = disc>P.soglia?[185,28,28]:disc>P.soglia-5?[133,77,14]:[22,101,52];
+    tc(discColor);
+    sf('bold',7);
+    doc.text(disc.toFixed(1)+'%',   C2.disc.x+C2.disc.w, y+5, {align:'right'});
+    sf('normal',7); tc(DARK);
+    doc.text(String(r.volume),      C2.vol.x+C2.vol.w,   y+5, {align:'right'});
+    sf('bold',7);
+    doc.text(eur(totRiga),          C2.tot.x+C2.tot.w,   y+5, {align:'right'});
     y+=rh;
   });
 
