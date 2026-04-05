@@ -2,7 +2,7 @@
   "name": "JD Preventivatore",
   "short_name": "JD Prev.",
   "description": "Preventivatore lavorazioni — JD Milling Center",
-  "start_url": "./JD_Preventivatore.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#111827",

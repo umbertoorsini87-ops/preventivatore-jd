@@ -330,6 +330,7 @@ table.pkg-table tr:last-child td{border-bottom:none}
     <div>
       <div class="logo-t">JD Milling Center</div>
       <div class="logo-s">Versione Commerciali</div>
+      <div id="app-ver-lbl" style="font-size:9px;color:var(--g500);margin-top:1px"></div>
     </div>
   </div>
   <div class="hdr-btns">
@@ -421,8 +422,8 @@ table.pkg-table tr:last-child td{border-bottom:none}
       <div class="card-bd" style="padding:0">
         <div id="quote-body"></div>
       </div>
-      <div class="disclaimer">
-        La componentistica protesica &egrave; esclusa dai prezzi indicati &mdash; Prezzi IVA esclusa salvo diversa indicazione.
+      <div class="disclaimer" style="background:#fff7ed;color:#c2410c;font-style:normal;font-weight:600;border-top:1px solid #fed7aa">
+        &#9888; Componentistica implantare esclusa &mdash; fatturata separatamente
       </div>
     </div>
 
@@ -510,6 +511,12 @@ table.pkg-table tr:last-child td{border-bottom:none}
 </div>
 
 <script>
+/* =====================================================================
+   VERSIONING
+===================================================================== */
+const APP_VERSION = "1.1.0";
+const APP_DATE    = "2026-04-05";
+
 /* =====================================================================
    DATA — STUDI Rev.08
 ===================================================================== */
@@ -1224,6 +1231,29 @@ function editItem(id){
 }
 
 /* =====================================================================
+   FULL ARCH QUICK-ADD ACCESSORIES
+===================================================================== */
+function quickAddModelloArcata(){
+  S.items.push({
+    id:uid(), catId:'s8', desc:'Stampa 3D — Modello Arcata',
+    unit:22, qty:1, vatRate:22, total:22, giorni:'2-3', disc:0
+  });
+  renderQuote(); renderTotals();
+}
+
+function quickAddGengiva(){
+  const p = prompt('Prezzo Gengiva (€):','');
+  if(p===null) return;
+  const v = parseFloat(String(p).replace(',','.'));
+  if(isNaN(v)||v<0){ alert('Prezzo non valido.'); return; }
+  S.items.push({
+    id:uid(), catId:'s8', desc:'Stampa 3D — Gengiva',
+    unit:v, qty:1, vatRate:22, total:v, giorni:'2-3', disc:0
+  });
+  renderQuote(); renderTotals();
+}
+
+/* =====================================================================
    RENDER QUOTE TABLE
 ===================================================================== */
 function renderQuote(){
@@ -1254,7 +1284,7 @@ function renderQuote(){
   const rows = S.items.map((item,idx)=>{
     const ivaCl = ivaCls(item.vatRate);
     const ivaLb = ivaLbl(item.vatRate);
-    return `<tr>
+    let row = `<tr>
       <td style="color:var(--g500);font-size:12px;width:28px">${idx+1}</td>
       <td>
         <div class="qt-desc">${escHtml(item.desc)}</div>
@@ -1269,6 +1299,14 @@ function renderQuote(){
         <button class="btn btn-red btn-sm" onclick="removeItem('${item.id}')" title="Elimina" style="margin-left:4px">&#215;</button>
       </td>
     </tr>`;
+    if(item.catId==='s4'){
+      row += `<tr class="no-print"><td colspan="7" style="padding:6px 10px;background:#fffbeb;border-left:3px solid #f59e0b">
+        <span style="color:#b45309;font-size:12px;font-weight:600">&#9888; Accessori non inclusi nel prezzo &mdash;</span>
+        <button class="btn btn-sm" style="margin-left:8px;background:#f59e0b;color:#fff;border:none" onclick="quickAddModelloArcata()">+ Modello Arcata (22&euro;)</button>
+        <button class="btn btn-sm" style="margin-left:6px;background:#f59e0b;color:#fff;border:none" onclick="quickAddGengiva()">+ Gengiva (prezzo da definire)</button>
+      </td></tr>`;
+    }
+    return row;
   }).join('');
 
   body.innerHTML=`<div class="qt-wrap"><table class="qt">
@@ -1464,9 +1502,20 @@ function handlePrint(){
   newPageIfNeeded(10); hline(y,DARK); y+=4;
   trow('TOTALE FINALE',eur(grand),true);
 
+  // ── DISCLAIMER COMPONENTISTICA ──
+  newPageIfNeeded(16);
+  fill(ML,y,cW,14,[255,247,237]);
+  doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,14,'S');
+  sf('bold',8); doc.setTextColor(194,65,12);
+  doc.text('\u26a0 IMPORTANTE:',ML+3,y+5);
+  sf('normal',7.5); doc.setTextColor(194,65,12);
+  doc.text('La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 ESCLUSA da tutti i prezzi indicati e verr\u00e0 fatturata separatamente.',ML+3,y+11);
+  y+=18;
+
+  // ── FOOTER ──
   const discY=H-12;
   hline(discY); sf('italic',7); tc(GRAY);
-  doc.text('La componentistica protesica \u00e8 esclusa dai prezzi indicati \u2014 Prezzi IVA esclusa salvo diversa indicazione.',W/2,discY+5,{align:'center'});
+  doc.text('Prezzi IVA esclusa salvo diversa indicazione \u2014 v'+APP_VERSION,W/2,discY+5,{align:'center'});
 
   doc.save('Preventivo_JD_'+S.quoteNum+'.pdf');
 }
@@ -2296,12 +2345,20 @@ function exportPkgPdf(){
   doc.text(eur(grandTotMens*12), W-MR, y, {align:'right'});
   y+=6;
 
-  // DISCLAIMER
-  newPageIfNeeded(14);
-  y+=4; hline(y); y+=5;
+  // DISCLAIMER COMPONENTISTICA
+  newPageIfNeeded(18);
+  y+=4;
+  fill(ML,y,cW,14,[255,247,237]);
+  doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,14,'S');
+  sf('bold',8); doc.setTextColor(194,65,12);
+  doc.text('\u26a0 IMPORTANTE:',ML+3,y+5);
+  sf('normal',7.5); doc.setTextColor(194,65,12);
+  doc.text('La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 ESCLUSA da tutti i prezzi indicati e verr\u00e0 fatturata separatamente.',ML+3,y+11);
+  y+=18;
+  hline(y); y+=5;
   sf('italic',7); tc(GRAY);
   const validStr = P.pkg.validita ? `Offerta valida fino al ${P.pkg.validita}` : 'Verificare la validit\u00e0 con il commerciale di riferimento';
-  doc.text(`Prezzi IVA esclusa \u2014 Componentistica protesica esclusa \u2014 ${validStr}`, W/2, y, {align:'center'});
+  doc.text(`Prezzi IVA esclusa \u2014 ${validStr}`, W/2, y, {align:'center'});
 
   // FOOTER
   const footY = H-8;
@@ -2327,6 +2384,23 @@ function init(){
   renderTotals();
   renderPkgEdit();
   initPWA();
+  initVersion();
+}
+
+function initVersion(){
+  const lbl = document.getElementById('app-ver-lbl');
+  if(lbl) lbl.textContent = 'v'+APP_VERSION+' \u2014 '+APP_DATE.split('-').reverse().join('/');
+
+  const LS_VER = 'jd_app_version_commerciali';
+  const stored = localStorage.getItem(LS_VER);
+  if(stored && stored !== APP_VERSION){
+    const banner = document.createElement('div');
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:#16a34a;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer';
+    banner.innerHTML='&#8635; Nuova versione v'+APP_VERSION+' disponibile &mdash; Tocca per aggiornare';
+    banner.onclick=()=>window.location.reload(true);
+    document.body.prepend(banner);
+  }
+  localStorage.setItem(LS_VER, APP_VERSION);
 }
 
 function initPWA(){

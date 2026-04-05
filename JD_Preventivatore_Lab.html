@@ -300,6 +300,7 @@ body.has-sticky .main{padding-bottom:80px}
     <div>
       <div class="logo-t">JD Milling Center</div>
       <div class="logo-s">Listino Laboratori Odontotecnici — Rev.03</div>
+      <div id="app-ver-lbl" style="font-size:9px;color:var(--g500);margin-top:1px"></div>
     </div>
   </div>
   <div class="hdr-btns">
@@ -434,6 +435,12 @@ body.has-sticky .main{padding-bottom:80px}
 </div>
 
 <script>
+/* =====================================================================
+   VERSIONING
+===================================================================== */
+const APP_VERSION = "1.1.0";
+const APP_DATE    = "2026-04-05";
+
 /* =====================================================================
    DATA — LAB Rev.03
 ===================================================================== */
@@ -1015,6 +1022,12 @@ function renderTotals(){
     html='<div style="color:var(--g500);font-size:13px;text-align:center;padding:20px 0">Aggiungi voci al preventivo per vedere il riepilogo.</div>';
   }
 
+  if(S.items.length){
+    html+=`<div style="margin-top:14px;padding:8px 10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;font-size:11px;color:#c2410c;font-weight:600">
+      &#9888; Componentistica implantare esclusa &mdash; fatturata separatamente
+    </div>`;
+  }
+
   document.getElementById('totals-body').innerHTML=html;
 
   // ship auto message
@@ -1166,10 +1179,20 @@ function handlePrint(){
   newPageIfNeeded(10); hline(y,DARK); y+=4;
   trow('TOTALE FINALE',eur(grand),true);
 
-  // ── DISCLAIMER ──
+  // ── DISCLAIMER COMPONENTISTICA ──
+  newPageIfNeeded(16);
+  fill(ML,y,cW,14,[255,247,237]);
+  doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,14,'S');
+  sf('bold',8); doc.setTextColor(194,65,12);
+  doc.text('\u26a0 IMPORTANTE:',ML+3,y+5);
+  sf('normal',7.5); doc.setTextColor(194,65,12);
+  doc.text('La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 ESCLUSA da tutti i prezzi indicati e verr\u00e0 fatturata separatamente.',ML+3,y+11);
+  y+=18;
+
+  // ── FOOTER ──
   const discY=H-12;
   hline(discY); sf('italic',7); tc(GRAY);
-  doc.text('La componentistica protesica \u00e8 esclusa dai prezzi indicati \u2014 Prezzi IVA esclusa salvo diversa indicazione.',W/2,discY+5,{align:'center'});
+  doc.text('Prezzi IVA esclusa salvo diversa indicazione \u2014 v'+APP_VERSION,W/2,discY+5,{align:'center'});
 
   doc.save('Preventivo_JD_'+S.quoteNum+'.pdf');
 }
@@ -1296,6 +1319,23 @@ function init(){
   renderQuote();
   renderTotals();
   initPWA();
+  initVersion();
+}
+
+function initVersion(){
+  const lbl = document.getElementById('app-ver-lbl');
+  if(lbl) lbl.textContent = 'v'+APP_VERSION+' \u2014 '+APP_DATE.split('-').reverse().join('/');
+
+  const LS_VER = 'jd_app_version_lab';
+  const stored = localStorage.getItem(LS_VER);
+  if(stored && stored !== APP_VERSION){
+    const banner = document.createElement('div');
+    banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:#16a34a;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer';
+    banner.innerHTML='&#8635; Nuova versione v'+APP_VERSION+' disponibile &mdash; Tocca per aggiornare';
+    banner.onclick=()=>window.location.reload(true);
+    document.body.prepend(banner);
+  }
+  localStorage.setItem(LS_VER, APP_VERSION);
 }
 
 function initPWA(){
