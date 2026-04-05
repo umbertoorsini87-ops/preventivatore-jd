@@ -32,7 +32,19 @@ body{
   padding:28px 24px 20px;
   text-align:center;
   border-bottom:1px solid rgba(255,255,255,.08);
+  position:relative;
 }
+.btn-upd{
+  position:absolute;top:16px;right:16px;
+  background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);
+  border:none;border-radius:8px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:7px 11px;font-size:18px;line-height:1;
+  font-family:inherit;transition:background .15s,color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-upd:hover{background:rgba(255,255,255,.18);color:#fff}
+.btn-upd-lbl{font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;line-height:1}
 .logo-box{
   width:64px;height:64px;
   background:var(--teal);
@@ -105,6 +117,7 @@ body{
 <body>
 
 <header class="hdr">
+  <button class="btn-upd" onclick="forceUpdate()" title="Verifica aggiornamenti">&#x1F504;<span class="btn-upd-lbl">Aggiorna</span></button>
   <div class="logo-box">JD</div>
   <h1>JD Preventivatore</h1>
   <p>JD Milling Center &mdash; Seleziona il listino</p>
@@ -152,6 +165,19 @@ body{
 /* Service Worker */
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+function forceUpdate(){
+  if(!confirm('Vuoi verificare aggiornamenti? L\'app verrà ricaricata.')) return;
+  if('serviceWorker' in navigator){
+    caches.keys().then(keys=>{
+      keys.forEach(key=>caches.delete(key));
+    }).then(()=>{
+      window.location.reload(true);
+    });
+  } else {
+    window.location.reload(true);
+  }
 }
 
 /* Apple Touch Icon via canvas */

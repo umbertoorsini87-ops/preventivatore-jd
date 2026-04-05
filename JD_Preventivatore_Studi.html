@@ -77,6 +77,9 @@ input.err,select.err{border-color:var(--red)}
 .btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:var(--teal-d)}
 .btn-gray{background:var(--g100);color:var(--g700)}.btn-gray:hover{background:var(--g200)}
 .btn-red{background:var(--red-l);color:var(--red)}.btn-red:hover{background:#fecaca}
+.btn-upd{background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);flex-direction:column;gap:2px;padding:5px 10px;font-size:16px;line-height:1;min-height:auto}
+.btn-upd:hover{background:rgba(255,255,255,.18);color:#fff}
+.btn-upd-lbl{font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;line-height:1}
 .btn-sm{padding:5px 9px;font-size:12px}
 .btn-full{width:100%;justify-content:center}
 .btn-row{display:flex;gap:8px;margin-top:4px}
@@ -304,6 +307,7 @@ body.has-sticky .main{padding-bottom:80px}
     </div>
   </div>
   <div class="hdr-btns">
+    <button class="btn btn-upd" onclick="forceUpdate()" title="Verifica aggiornamenti">&#x1F504;<span class="btn-upd-lbl">Aggiorna</span></button>
     <button class="btn btn-gray" onclick="showHistory()">&#9776; <span class="btn-label">Storico</span></button>
     <button class="btn btn-red" onclick="confirmReset()">&#10005; <span class="btn-label">Reset</span></button>
   </div>
@@ -435,6 +439,22 @@ body.has-sticky .main{padding-bottom:80px}
 </div>
 
 <script>
+/* =====================================================================
+   FORCE UPDATE
+===================================================================== */
+function forceUpdate(){
+  if(!confirm('Vuoi verificare aggiornamenti? L\'app verrà ricaricata.')) return;
+  if('serviceWorker' in navigator){
+    caches.keys().then(keys=>{
+      keys.forEach(key=>caches.delete(key));
+    }).then(()=>{
+      window.location.reload(true);
+    });
+  } else {
+    window.location.reload(true);
+  }
+}
+
 /* =====================================================================
    VERSIONING
 ===================================================================== */

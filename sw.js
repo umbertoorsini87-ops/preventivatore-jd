@@ -1,7 +1,10 @@
-/* JD Preventivatore — Service Worker v1 */
-const CACHE = 'jd-prev-v1';
+/* JD Preventivatore — Service Worker v2.0 */
+const CACHE = 'jd-cache-v2.0';
 const APP_ASSETS = [
-  './JD_Preventivatore.html',
+  './index.html',
+  './JD_Preventivatore_Studi.html',
+  './JD_Preventivatore_Lab.html',
+  './JD_Preventivatore_Commerciali.html',
   './manifest.json',
   './icon.svg',
 ];
