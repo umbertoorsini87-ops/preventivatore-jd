@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d9488">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JD Preventivatore">
+<link rel="manifest" href="manifest.json">
+<title>JD Preventivatore Lab — JD Milling Center</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0d9488;--teal-d:#0f766e;--teal-l:#ccfbf1;--teal-ll:#f0fdfa;
+  --g900:#111827;--g700:#374151;--g500:#6b7280;--g300:#d1d5db;--g200:#e5e7eb;--g100:#f3f4f6;
+  --white:#fff;--red:#ef4444;--red-l:#fee2e2;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--g100);color:var(--g900);font-size:14px;min-height:100vh}
+
+/* HEADER */
+.hdr{background:var(--g900);color:var(--white);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-box{width:42px;height:42px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;letter-spacing:-1px;color:#fff;flex-shrink:0}
+.logo-t{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.logo-s{font-size:10px;color:var(--teal-l);letter-spacing:1.2px;text-transform:uppercase;margin-top:1px}
+.hdr-btns{display:flex;gap:8px;flex-shrink:0}
+
+/* LAYOUT */
+.main{max-width:1280px;margin:0 auto;padding:20px;display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+
+/* CARD */
+.card{background:var(--white);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
+.card:last-child{margin-bottom:0}
+.card-hd{padding:13px 18px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between}
+.card-hd h3{font-size:13px;font-weight:700;color:var(--g700);text-transform:uppercase;letter-spacing:.5px}
+.card-bd{padding:18px}
+
+/* TOGGLE */
+.toggle{display:flex;background:var(--g100);border-radius:8px;padding:3px;margin-bottom:18px}
+.toggle button{flex:1;padding:7px 8px;border:none;background:transparent;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;color:var(--g500);transition:all .15s;line-height:1.3}
+.toggle button.on{background:var(--white);color:var(--teal-d);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* FORM */
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--g300);border-radius:6px;font-size:13px;color:var(--g900);background:var(--white);transition:border-color .15s;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+textarea{resize:vertical;min-height:56px}
+input.err,select.err{border-color:var(--red)}
+.err-msg{font-size:11px;color:var(--red);margin-top:3px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* RADIO PILLS */
+.pills{display:flex;gap:6px}
+.pill{flex:1;padding:7px;border:1.5px solid var(--g300);border-radius:6px;font-size:12px;font-weight:500;color:var(--g500);cursor:pointer;text-align:center;transition:all .15s;user-select:none}
+.pill.on{border-color:var(--teal);background:var(--teal-l);color:var(--teal-d);font-weight:700}
+
+/* CHECKBOX */
+.chk-row{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font-size:13px;color:var(--g700)}
+.chk-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--teal);flex-shrink:0;cursor:pointer}
+
+/* PRICE PREVIEW */
+.price-prev{background:var(--teal-ll);border:1px solid #99f6e4;border-radius:8px;padding:11px 14px;margin:14px 0;display:flex;align-items:center;justify-content:space-between}
+.price-prev .pl{font-size:11px;color:var(--teal-d);font-weight:600}
+.price-prev .pr{display:flex;align-items:baseline;gap:8px}
+.price-prev .amt{font-size:22px;font-weight:800;color:var(--teal-d);font-variant-numeric:tabular-nums}
+.price-prev .ivab{font-size:11px;background:rgba(15,118,110,.15);color:var(--teal-d);padding:2px 6px;border-radius:4px;font-weight:700}
+.price-prev.err-prev{background:#fff1f2;border-color:#fca5a5}
+.price-prev.err-prev .pl,.price-prev.err-prev .amt{color:var(--red)}
+
+/* BUTTONS */
+.btn{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:5px;font-family:inherit}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:var(--teal-d)}
+.btn-gray{background:var(--g100);color:var(--g700)}.btn-gray:hover{background:var(--g200)}
+.btn-red{background:var(--red-l);color:var(--red)}.btn-red:hover{background:#fecaca}
+.btn-sm{padding:5px 9px;font-size:12px}
+.btn-full{width:100%;justify-content:center}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+
+/* NOTE */
+.note{font-size:11px;color:var(--g500);font-style:italic;padding:5px 0}
+.note-warn{font-size:11px;color:#92400e;background:#fef3c7;border-radius:4px;padding:4px 8px;margin-top:4px}
+
+/* SECTION TITLE */
+.sec-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--teal);padding:6px 0 4px;border-bottom:1px solid var(--teal-l);margin-bottom:10px}
+
+/* QUOTE TABLE */
+.qt-wrap{overflow-x:auto}
+table.qt{width:100%;border-collapse:collapse;font-size:13px}
+table.qt th{background:var(--g100);padding:9px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g500);white-space:nowrap}
+table.qt td{padding:10px;border-bottom:1px solid var(--g100);vertical-align:top}
+table.qt tr:last-child td{border-bottom:none}
+table.qt tbody tr:hover td{background:#fafafa}
+.qt-desc{font-weight:600;font-size:13px;line-height:1.3}
+.qt-sub{font-size:11px;color:var(--g500);margin-top:2px}
+.num-col{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.act-col{white-space:nowrap;text-align:center}
+
+/* IVA BADGES */
+.ivab{display:inline-block;font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px}
+.iva0{background:#dcfce7;color:#166534}
+.iva4{background:#dbeafe;color:#1e40af}
+.iva22{background:#fef3c7;color:#92400e}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:var(--g500)}
+.empty svg{display:block;margin:0 auto 12px;opacity:.3}
+.empty p{font-size:14px}
+
+/* SHIPPING */
+.ship-box{background:var(--g100);border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.ship-auto{font-size:12px;color:var(--g500);margin-top:6px}
+
+/* TOTALS */
+.tot-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.tot-row.dim{color:var(--g500)}
+.tot-row.iva{color:var(--g700)}
+.tot-row.ship{color:var(--g700)}
+.tot-sep{border:none;border-top:1px solid var(--g200);margin:6px 0}
+.tot-sep2{border:none;border-top:2px solid var(--g900);margin:8px 0}
+.tot-row.grand{font-size:18px;font-weight:800;padding-top:4px}
+.tot-val{font-variant-numeric:tabular-nums;text-align:right}
+.delivery-badge{display:inline-flex;align-items:center;gap:5px;background:var(--teal-ll);border:1px solid #99f6e4;color:var(--teal-d);font-size:12px;font-weight:700;padding:5px 10px;border-radius:6px;margin-bottom:14px}
+
+/* DISCLAIMER */
+.disclaimer{font-size:11px;color:var(--g500);font-style:italic;padding:12px 18px;border-top:1px solid var(--g100);text-align:center}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999}
+.modal{background:var(--white);border-radius:12px;padding:24px;max-width:440px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;margin-bottom:8px}
+.modal p{color:var(--g500);font-size:13px;margin-bottom:18px;line-height:1.5}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.hist-list{max-height:360px;overflow-y:auto;margin-bottom:16px}
+.hist-item{padding:10px 12px;border:1px solid var(--g200);border-radius:6px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.hist-item:hover{border-color:var(--teal);background:var(--teal-ll)}
+.hist-item-t{font-weight:600;font-size:13px}
+.hist-item-s{font-size:11px;color:var(--g500);margin-top:2px}
+.hist-empty{text-align:center;color:var(--g500);padding:20px;font-size:13px}
+
+/* PRINT */
+@media print{
+  body{background:#fff;font-size:12px}
+  .no-print{display:none!important}
+  .main{display:block;max-width:100%;padding:0}
+  .left-panel{display:none}
+  .card{box-shadow:none;margin-bottom:12px}
+  .hdr{background:#fff!important;color:#000!important;border-bottom:2px solid #000;padding:10px 0}
+  .logo-box{background:var(--teal)!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .hdr-btns{display:none}
+  .print-header{display:block!important}
+  table.qt th{background:#f3f4f6!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .ship-box{background:#f3f4f6!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .ivab{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .delivery-badge{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  @page{margin:15mm}
+}
+.print-header{display:none}
+
+/* ── MOBILE-FIRST OVERRIDES ──────────────────────────────────── */
+
+/* Tutti i campi form: font ≥ 16px su mobile → iOS non zooma */
+@media(max-width:767px){
+  body{font-size:15px}
+
+  /* Header compatto */
+  .hdr{padding:10px 14px;gap:8px}
+  .logo-t{font-size:16px}
+  .logo-s{display:none}
+  .logo-box{width:36px;height:36px;font-size:15px}
+  .hdr-btns{gap:6px}
+  .hdr-btns .btn{min-height:40px;padding:8px 10px}
+  .btn-label{display:none}         /* nascondi testo, lascia solo icona */
+
+  /* Layout */
+  .main{padding:12px;gap:12px;padding-bottom:16px}
+  .card-bd{padding:14px}
+  .card-hd{padding:11px 14px}
+
+  /* Toggle cliente tipo */
+  .toggle{margin-bottom:14px}
+  .toggle button{padding:9px 6px;font-size:11px;min-height:44px;line-height:1.2}
+
+  /* Form inputs: 16px previene lo zoom automatico di iOS */
+  input[type=text],input[type=number],select,textarea{
+    font-size:16px;
+    padding:10px 12px;
+    min-height:44px;
+  }
+  textarea{min-height:64px}
+
+  /* Bottoni touch-friendly (44px è il minimo Apple HIG) */
+  .btn{min-height:44px;padding:10px 14px;font-size:14px;border-radius:8px}
+  .btn-sm{min-height:38px;padding:7px 11px;font-size:13px}
+  .btn-full{min-height:48px;font-size:15px}
+
+  /* Pills modality */
+  .pill{min-height:44px;padding:10px 6px;font-size:13px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+
+  /* Checkbox hit area */
+  .chk-row{padding:8px 0;gap:10px}
+  .chk-row input[type=checkbox]{width:22px;height:22px;flex-shrink:0}
+
+  /* row2 rimane 2 col se > 360px, altrimenti si impila */
+  .row2{gap:8px}
+
+  /* Tabella preventivo: scroll orizzontale + font ridotto */
+  table.qt{font-size:12px}
+  table.qt th{padding:8px 6px;font-size:9px}
+  table.qt td{padding:8px 6px}
+  .qt-desc{font-size:12px}
+
+  /* Totali */
+  .tot-row{font-size:14px}
+  .tot-row.grand{font-size:17px}
+
+  /* Modali a tutto schermo su mobile */
+  .modal{
+    position:fixed;bottom:0;left:0;right:0;
+    max-width:100%;width:100%;
+    border-radius:16px 16px 0 0;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+    margin:0;
+  }
+  .hist-list{max-height:50vh}
+
+  /* Price preview più leggibile */
+  .price-prev .amt{font-size:26px}
+
+  /* Spazio sicuro iOS in fondo */
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
+
+/* Schermi molto piccoli: row2 impilato */
+@media(max-width:360px){
+  .row2{grid-template-columns:1fr}
+}
+
+/* Tablet e schermi intermedi (768–900): layout ibrido */
+@media(min-width:768px) and (max-width:900px){
+  .main{padding:16px;gap:16px}
+  input[type=text],input[type=number],select,textarea{font-size:16px}
+  .btn{min-height:44px}
+  .pill{min-height:44px}
+}
+
+/* ── CARD PRINCIPALE (Aggiungi Lavorazione) ─────────────────── */
+.card-main{border-top:3px solid var(--teal)}
+.card-main .card-hd{background:var(--teal-ll)}
+.card-main .card-hd h3{color:var(--teal-d);font-size:14px}
+
+/* ── ACCORDION Dati cliente ──────────────────────────────────── */
+.acc-card{overflow:visible}
+.acc-card .card-hd,.acc-card>.card-bd{display:none} /* non usati */
+.acc-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px;background:transparent;border:none;cursor:pointer;
+  font-size:13px;font-weight:600;color:var(--g700);text-align:left;
+  transition:background .15s;border-radius:10px;
+}
+.acc-btn:hover{background:var(--g100)}
+.acc-btn.open{color:var(--teal-d);background:var(--teal-ll);border-radius:10px 10px 0 0}
+.acc-icon{font-size:12px;transition:transform .2s;flex-shrink:0;margin-left:8px;color:var(--g500)}
+.acc-btn.open .acc-icon{transform:rotate(90deg);color:var(--teal-d)}
+.acc-body{padding:14px 18px 16px;border-top:1px solid var(--teal-l)}
+
+/* ── STICKY PDF BAR ──────────────────────────────────────────── */
+.sticky-pdf{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--g900);
+  box-shadow:0 -2px 16px rgba(0,0,0,.3);
+  padding:10px 20px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+  transform:translateY(100%);
+  transition:transform .25s ease;
+}
+.sticky-pdf.visible{transform:translateY(0)}
+.sticky-pdf-inner{
+  max-width:1280px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.sticky-pdf-info{color:var(--g300);font-size:13px;line-height:1.3}
+.sticky-pdf-info strong{color:#fff;display:block;font-size:14px}
+.sticky-pdf-btn{min-height:46px;font-size:14px;padding:10px 22px;white-space:nowrap}
+/* compensa l'altezza della barra sticky quando è visibile */
+body.has-sticky .main{padding-bottom:80px}
+@media(max-width:767px){body.has-sticky .main{padding-bottom:90px}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<header class="hdr no-print">
+  <div class="logo">
+    <div class="logo-box">JD</div>
+    <div>
+      <div class="logo-t">JD Milling Center</div>
+      <div class="logo-s">Listino Laboratori Odontotecnici — Rev.03</div>
+    </div>
+  </div>
+  <div class="hdr-btns">
+    <button class="btn btn-gray" onclick="showHistory()">&#9776; <span class="btn-label">Storico</span></button>
+    <button class="btn btn-red" onclick="confirmReset()">&#10005; <span class="btn-label">Reset</span></button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- LEFT PANEL -->
+  <div class="left-panel no-print">
+
+    <!-- 1. Aggiungi Lavorazione — card principale in evidenza -->
+    <div class="card card-main">
+      <div class="card-hd"><h3>Aggiungi lavorazione</h3></div>
+      <div class="card-bd">
+        <div class="fg"><label>Categoria</label>
+          <select id="sel-cat" onchange="onCatChange()">
+            <option value="">— Seleziona categoria —</option>
+          </select>
+        </div>
+        <div id="dyn-form"></div>
+        <div id="price-prev" class="price-prev" style="display:none">
+          <span class="pl">Prezzo calcolato</span>
+          <div class="pr"><span class="amt" id="prev-amt">—</span><span class="ivab" id="prev-iva">IVA 0%</span></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-teal btn-full" id="btn-add" onclick="addOrUpdate()">+ Aggiungi al preventivo</button>
+          <button class="btn btn-gray" id="btn-cancel" style="display:none" onclick="cancelEdit()">Annulla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Dati cliente: accordion chiuso di default -->
+    <div class="card acc-card">
+      <button class="acc-btn" id="acc-btn-dati" onclick="toggleAccordion('acc-btn-dati','acc-body-dati')">
+        <span>Dati cliente <span style="font-weight:400;opacity:.65">(opzionale)</span></span>
+        <span class="acc-icon" id="acc-icon-dati">&#9654;</span>
+      </button>
+      <div id="acc-body-dati" class="acc-body" style="display:none">
+        <div class="fg"><label>Cliente</label><input type="text" id="inp-cliente" placeholder="Nome studio / laboratorio" oninput="S.cliente=this.value"></div>
+        <div class="fg" style="margin-bottom:0"><label>Paziente / Note</label><textarea id="inp-paziente" placeholder="Nome paziente, riferimento caso..." oninput="S.paziente=this.value"></textarea></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <!-- Print header (visible only on print) -->
+    <div class="print-header card" style="padding:16px 18px">
+      <div class="logo" style="margin-bottom:8px">
+        <div class="logo-box">JD</div>
+        <div><div class="logo-t">JD Milling Center</div><div class="logo-s">Listino Laboratori Odontotecnici — Rev.03</div></div>
+      </div>
+      <div style="display:flex;gap:32px;font-size:12px;margin-top:8px">
+        <div><strong>Cliente:</strong> <span id="pr-cliente">—</span></div>
+        <div><strong>Paziente/Note:</strong> <span id="pr-paziente">—</span></div>
+        <div><strong>Data:</strong> <span id="pr-data">—</span></div>
+        <div><strong>Preventivo n°:</strong> <span id="pr-num">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <h3>Voci Preventivo</h3>
+        <div id="delivery-badge"></div>
+      </div>
+      <div class="card-bd" style="padding:0">
+        <div id="quote-body"></div>
+      </div>
+      <div class="disclaimer">
+        La componentistica protesica &egrave; esclusa dai prezzi indicati &mdash; Prezzi IVA esclusa salvo diversa indicazione.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><h3>Riepilogo e Spedizione</h3></div>
+      <div class="card-bd">
+        <div class="ship-box">
+          <div style="font-size:12px;font-weight:700;color:var(--g700);margin-bottom:6px">Opzioni spedizione</div>
+          <label class="chk-row"><input type="checkbox" id="chk-exchange" onchange="S.ship.exchange=this.checked;renderTotals()"> Ritiro / Exchange &nbsp;<strong>+10,00 &euro;</strong></label>
+          <label class="chk-row"><input type="checkbox" id="chk-urgent" onchange="S.ship.urgent=this.checked;renderTotals()"> Urgente &nbsp;<strong>+35,00 &euro;</strong></label>
+          <div class="ship-auto" id="ship-auto-msg"></div>
+        </div>
+        <div id="totals-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY PDF BAR -->
+<div class="sticky-pdf no-print" id="sticky-pdf">
+  <div class="sticky-pdf-inner">
+    <div class="sticky-pdf-info" id="sticky-pdf-info"></div>
+    <button class="btn btn-teal sticky-pdf-btn" onclick="handlePrint()">&#9113;&nbsp; Esporta PDF</button>
+  </div>
+</div>
+
+<!-- CONFIRM RESET MODAL -->
+<div class="overlay" id="modal-reset" style="display:none">
+  <div class="modal">
+    <h3>Conferma Reset</h3>
+    <p>Vuoi cancellare tutto il preventivo corrente? L'operazione non &egrave; reversibile.</p>
+    <div class="modal-btns">
+      <button class="btn btn-gray" onclick="closeModal('modal-reset')">Annulla</button>
+      <button class="btn btn-red" onclick="doReset()">Svuota preventivo</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="overlay" id="modal-history" style="display:none" onclick="if(event.target===this)closeModal('modal-history')">
+  <div class="modal" style="max-width:520px">
+    <h3>Storico preventivi</h3>
+    <p>Gli ultimi 10 preventivi salvati automaticamente al momento dell'aggiunta della prima voce.</p>
+    <div class="hist-list" id="hist-list"></div>
+    <div class="modal-btns"><button class="btn btn-gray" onclick="closeModal('modal-history')">Chiudi</button></div>
+  </div>
+</div>
+
+<!-- LOAD HISTORY CONFIRM -->
+<div class="overlay" id="modal-load-hist" style="display:none">
+  <div class="modal">
+    <h3>Carica preventivo</h3>
+    <p>Caricare questo preventivo dallo storico? Il preventivo corrente verr&agrave; perso.</p>
+    <div class="modal-btns">
+      <button class="btn btn-gray" onclick="closeModal('modal-load-hist')">Annulla</button>
+      <button class="btn btn-teal" onclick="doLoadHist()">Carica</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   DATA — LAB Rev.03
+===================================================================== */
+const LAB = [
+  {
+    id:'l1', nome:'Abutment Avvitato Diretto', iva:4, giorni:'5-7',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[{nome:'Titanio',o:45,a:65},{nome:'Cromo Cobalto',o:50,a:70}],
+    waxup:{analogico:10}
+  },
+  {
+    id:'l2', nome:'Corone/Ponti su Ti-Base', iva:4, giorni:'5-7',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[
+      {nome:'Zirconia',o:35,a:50},
+      {nome:'PMMA',o:10,a:25},
+      {nome:'PMMA Rinforzato',o:30,a:45},
+      {nome:'Resina 3D Jig',o:5,a:20},
+    ],
+    waxup:{analogico:10}
+  },
+  {
+    id:'l3', nome:'Barre e Ponti Avvitati', iva:4, giorni:'7-10', tipo:'barre',
+    mod:['Ottica','Analogico'],
+    /* prezzi[materiale][modalita][fascia] — analogico stime da verificare */
+    prezzi:{
+      'Cromo Cobalto':{o:{2:130,'3-4':150,'5-8':300,'9-14':350},a:{2:165,'3-4':190,'5-8':365,'9-14':435}},
+      'Titanio Gr5':{o:{2:110,'3-4':130,'5-8':250,'9-14':300},a:{2:140,'3-4':165,'5-8':310,'9-14':380}}
+    },
+    waxup:{analog_24:20, analog_514:50}
+  },
+  {
+    id:'l4', nome:'Corone/Ponti su Monconi Naturali', iva:4, giorni:'5-7',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[
+      {nome:'Cromo Cobalto',o:20,a:35},
+      {nome:'Titanio',o:20,a:35},
+      {nome:'Zirconia',o:35,a:50},
+      {nome:'PMMA',o:10,a:25},
+      {nome:'PMMA Rinforzato',o:30,a:45},
+      {nome:'Disilicato',o:65,a:85},
+    ]
+  },
+  {
+    id:'l5', nome:'Laser Melting — Titanio', iva:4, giorni:'7-10',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[{nome:'Titanio',o:8,a:25}]
+  },
+  {
+    id:'l6', nome:'Abutment + Corona', iva:4, giorni:'5-7',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[
+      {nome:'Titanio + Composito',o:65,a:75},
+      {nome:'Titanio + Zirconia',o:75,a:85},
+      {nome:'Titanio + PMMA',o:45,a:55},
+    ]
+  },
+  {
+    id:'l7', nome:'Barra + Sovrastruttura', iva:4, giorni:'7-10',
+    tipo:'lab_arcata', mod:['Ottica','Analogico'],
+    mat:[
+      {nome:'Titanio + Composito',o:600,a:700},
+      {nome:'Titanio + Zirconia',o:700,a:800},
+      {nome:'Titanio + PMMA',o:400,a:500},
+    ],
+    waxup:{ottica:5,analogico:50}
+  },
+  {id:'l8', nome:'Progettazione da Invio File', iva:22, giorni:'2-3', tipo:'prog_lab'},
+  {id:'l9', nome:'Stampa 3D', iva:22, giorni:'2-3', tipo:'stampa3d'},
+  {
+    id:'l10', nome:'Servizi', iva:22, giorni:'2-3', tipo:'servizi_lab',
+    voci:[
+      {nome:'Invio file progettazione provvisorio su chirurgia guidata', prezzo:16},
+      {nome:'Foro inclinato su avvitata diretta', prezzo:16},
+    ]
+  },
+];
+
+const STAMPA3D_VOCI = [
+  {nome:'Modello arcata',prezzo:22},
+  {nome:'Modello emiarcata',prezzo:12},
+  {nome:'Modello arcata + antagonista',prezzo:30},
+  {nome:'Modello emiarcata + antagonista',prezzo:22},
+  {nome:'Progettazione modello arcata',prezzo:16},
+  {nome:'DIMA senza boccole',prezzo:40},
+  {nome:'Biomodello + segmentazione',prezzo:200},
+];
+
+/* =====================================================================
+   STATE
+===================================================================== */
+const S = {
+  clientType: 'lab',
+  items: [],
+  editingId: null,
+  cliente: '',
+  paziente: '',
+  ship: {exchange:false, urgent:false},
+  quoteNum: Math.floor(Date.now()/1000),
+};
+let _uid = 1;
+
+/* =====================================================================
+   UTILS
+===================================================================== */
+function uid(){ return 'i'+(_uid++) }
+function eur(n){ return n.toFixed(2).replace('.',',') + '\u00a0\u20ac' }
+function getCats(){ return LAB; }
+function getCat(id){ return getCats().find(c=>c.id===id) }
+function ivaCls(r){ return r===0?'iva0':r===4?'iva4':'iva22' }
+function ivaLbl(r){ return 'IVA '+r+'%' }
+function safeParse(v,d=0){ const n=parseFloat(v); return isNaN(n)?d:n }
+function safeInt(v,d=1){ const n=parseInt(v); return isNaN(n)?d:n }
+
+/* =====================================================================
+   POPULATE CATEGORY SELECT
+===================================================================== */
+function populateCatSelect(){
+  const sel = document.getElementById('sel-cat');
+  sel.innerHTML = '<option value="">— Seleziona categoria —</option>';
+  getCats().forEach(c=>{
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.nome;
+    sel.appendChild(o);
+  });
+}
+
+/* =====================================================================
+   CATEGORY CHANGE → RENDER FORM
+===================================================================== */
+function onCatChange(){
+  const id = document.getElementById('sel-cat').value;
+  const cat = getCat(id);
+  const df = document.getElementById('dyn-form');
+  if(!cat){ df.innerHTML=''; document.getElementById('price-prev').style.display='none'; return; }
+  df.innerHTML = renderForm(cat);
+  bindFormEvents(cat);
+  updatePreview();
+}
+
+/* =====================================================================
+   FORM RENDERING
+===================================================================== */
+function renderForm(cat){
+  switch(cat.tipo){
+    case 'lab_el': return renderLabEl(cat);
+    case 'lab_arcata': return renderLabArcata(cat);
+    case 'barre': return renderBarre(cat);
+    case 'stampa3d': return renderStampa3D(cat);
+    case 'prog_lab': return renderProgLab(cat);
+    case 'servizi_lab': return renderServiziLab(cat);
+    default: return '';
+  }
+}
+
+function modPills(mods, id='mod'){
+  return `<div class="fg"><label>Modalit&agrave;</label><div class="pills" id="pills-${id}">
+    ${mods.map((m,i)=>`<div class="pill${i===0?' on':''}" data-val="${m}" onclick="selectPill('pills-${id}',this)">${m}</div>`).join('')}
+  </div></div>`;
+}
+
+function labMatSelect(cat){
+  return `<div class="fg"><label>Materiale</label>
+    <select id="sel-mat" onchange="updateLabMat()">
+      ${cat.mat.map(m=>`<option value="${m.nome}">${m.nome}</option>`).join('')}
+    </select></div>`;
+}
+
+function renderLabEl(cat){
+  const hasWaxup = cat.waxup && cat.waxup.analogico;
+  return modPills(cat.mod,'mod') + labMatSelect(cat) +
+    `<div class="fg"><label>Numero elementi</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>` +
+    (hasWaxup ? `<div id="waxup-row" style="display:none">
+      <label class="chk-row"><input type="checkbox" id="chk-waxup" onchange="updatePreview()"> Wax-up fornito (sconto &minus;${cat.waxup.analogico}&euro;/el)</label>
+    </div>` : '');
+}
+function renderLabArcata(cat){
+  const hasWaxup = cat.waxup;
+  const waxDesc = hasWaxup ? `Ottica: &minus;${cat.waxup.ottica}&euro;/arcata | Analogico: &minus;${cat.waxup.analogico}&euro;/arcata` : '';
+  return modPills(cat.mod,'mod') + labMatSelect(cat) +
+    `<div class="fg"><label>Numero arcate</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>` +
+    (hasWaxup ? `<label class="chk-row"><input type="checkbox" id="chk-waxup" onchange="updatePreview()"> Wax-up fornito (${waxDesc})</label>` : '');
+}
+
+function renderBarre(cat){
+  const mats = Object.keys(cat.prezzi).map(m=>`<option value="${m}">${m}</option>`).join('');
+  return modPills(cat.mod,'mod') +
+    `<div class="fg"><label>Materiale</label><select id="sel-mat" onchange="updateBarreFascia()">${mats}</select></div>` +
+    `<div class="fg"><label>Numero elementi <small>(2&ndash;14)</small></label>
+      <input type="number" id="inp-el" min="2" max="14" value="2" onchange="updateBarreFascia()">
+      <div id="barre-fascia" class="note" style="margin-top:4px"></div>
+    </div>` +
+    `<div id="waxup-row-barre" style="display:none">
+      <label class="chk-row"><input type="checkbox" id="chk-waxup" onchange="updatePreview()"> Wax-up fornito</label>
+    </div>` +
+    `<div class="note-warn" style="display:block;margin-top:6px">* I prezzi analogico per le Barre sono stime &mdash; verificare con il listino ufficiale.</div>`;
+}
+
+function renderStampa3D(cat){
+  const opts = STAMPA3D_VOCI.map((v,i)=>`<option value="${i}">${v.nome} &mdash; ${eur(v.prezzo)}</option>`).join('');
+  return `<div class="fg"><label>Voce</label><select id="sel-s3d" onchange="updatePreview()">${opts}</select></div>
+    <div class="fg"><label>Quantit&agrave;</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>`;
+}
+
+function renderProgLab(cat){
+  return `<div class="fg"><label>Tipo</label>
+    <select id="sel-prog" onchange="onProgLabChange()">
+      <option value="el">Per elemento &mdash; 10,00 &euro;/el</option>
+      <option value="full">Full Arch &mdash; 100,00 &euro;</option>
+    </select></div>
+    <div id="prog-el-row">
+      <div class="fg"><label>Numero elementi</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>
+    </div>`;
+}
+
+function renderServiziLab(cat){
+  const opts = cat.voci.map((v,i)=>`<option value="${i}">${v.nome} &mdash; ${eur(v.prezzo)}</option>`).join('');
+  return `<div class="fg"><label>Voce</label><select id="sel-srv" onchange="updatePreview()">${opts}</select></div>
+    <div class="fg"><label>Quantit&agrave;</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>`;
+}
+
+/* =====================================================================
+   BIND FORM EVENTS (post-render)
+===================================================================== */
+function bindFormEvents(cat){
+  // nothing special needed, events are inline
+}
+
+/* =====================================================================
+   DYNAMIC SUB-FORM UPDATES
+===================================================================== */
+function selectPill(groupId, el){
+  document.querySelectorAll('#'+groupId+' .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  const catId = document.getElementById('sel-cat').value;
+  const cat = getCat(catId);
+  if(!cat) return;
+  // For lab categories, update waxup visibility
+  if(cat.tipo==='lab_el'||cat.tipo==='lab_arcata'||cat.tipo==='barre'){
+    updateLabMat && updateLabMat();
+    updateBarreFascia && updateBarreFascia();
+  }
+  updatePreview();
+}
+
+function getPillVal(groupId){
+  const on = document.querySelector('#'+groupId+' .pill.on');
+  return on ? on.dataset.val : null;
+}
+
+function updateLabMat(){
+  const mod = getPillVal('pills-mod');
+  const wr = document.getElementById('waxup-row');
+  if(wr){
+    wr.style.display = (mod==='Analogico'||mod==='Analogica') ? 'block' : 'none';
+    if(wr.style.display==='none'){
+      const chk = document.getElementById('chk-waxup');
+      if(chk) chk.checked=false;
+    }
+  }
+  updatePreview();
+}
+
+function updateBarreFascia(){
+  const mod = getPillVal('pills-mod');
+  const wr = document.getElementById('waxup-row-barre');
+  if(wr) wr.style.display=(mod==='Analogico')?'block':'none';
+  const n = safeInt(document.getElementById('inp-el')?.value, 2);
+  const fascia = getBarreFascia(n);
+  const fd = document.getElementById('barre-fascia');
+  if(fd) fd.textContent = n<2||n>14 ? 'Numero non valido (2-14)' : 'Fascia: '+fascia;
+  updatePreview();
+}
+
+function getBarreFascia(n){
+  if(n===2) return '2 el.';
+  if(n>=3&&n<=4) return '3-4 el.';
+  if(n>=5&&n<=8) return '5-8 el.';
+  if(n>=9&&n<=14) return '9-14 el.';
+  return null;
+}
+
+function getBarreKey(n){
+  if(n===2) return 2;
+  if(n>=3&&n<=4) return '3-4';
+  if(n>=5&&n<=8) return '5-8';
+  if(n>=9&&n<=14) return '9-14';
+  return null;
+}
+
+function onProgLabChange(){
+  const t = document.getElementById('sel-prog')?.value;
+  const row = document.getElementById('prog-el-row');
+  if(row) row.style.display=(t==='el')?'block':'none';
+  updatePreview();
+}
+
+/* =====================================================================
+   PRICE CALCULATION
+===================================================================== */
+function calcPrice(cat){
+  switch(cat.tipo){
+    case 'lab_el': return calcLabEl(cat);
+    case 'lab_arcata': return calcLabArcata(cat);
+    case 'barre': return calcBarre(cat);
+    case 'stampa3d': return calcStampa3D(cat);
+    case 'prog_lab': return calcProgLab(cat);
+    case 'servizi_lab': return calcServiziLab(cat);
+    default: return {unit:0,qty:1,total:0,desc:'',valid:false};
+  }
+}
+
+function getModLab(){
+  const mod = getPillVal('pills-mod');
+  return mod==='Ottica'?'o':'a';
+}
+
+function calcLabEl(cat){
+  const mk = getModLab();
+  const modName = getPillVal('pills-mod');
+  const matName = document.getElementById('sel-mat')?.value;
+  const mat = cat.mat.find(m=>m.nome===matName);
+  const el = safeInt(document.getElementById('inp-el')?.value,1);
+  const waxup = document.getElementById('chk-waxup')?.checked && mk==='a';
+  if(!mat) return {total:0,valid:false};
+  const disc = (waxup && cat.waxup?.analogico) ? cat.waxup.analogico : 0;
+  const price = mat[mk]-disc;
+  const total = price*el;
+  let desc = `${cat.nome} — ${mat.nome} (${modName})`;
+  if(waxup) desc += ' [wax-up -'+disc+'€/el]';
+  return {unit:mat[mk],qty:el,total,desc,valid:true,unitLabel:'€/el',disc:waxup?disc*el:0};
+}
+function calcLabArcata(cat){
+  const mk = getModLab();
+  const modName = getPillVal('pills-mod');
+  const matName = document.getElementById('sel-mat')?.value;
+  const mat = cat.mat.find(m=>m.nome===matName);
+  const el = safeInt(document.getElementById('inp-el')?.value,1);
+  const waxup = document.getElementById('chk-waxup')?.checked;
+  if(!mat) return {total:0,valid:false};
+  const discUnit = waxup ? (mk==='o'?(cat.waxup?.ottica||0):(cat.waxup?.analogico||0)) : 0;
+  const price = mat[mk]-discUnit;
+  const total = price*el;
+  let desc = `${cat.nome} — ${mat.nome} (${modName})`;
+  if(waxup&&discUnit) desc += ` [wax-up -${discUnit}€/arcata]`;
+  return {unit:mat[mk],qty:el,total,desc,valid:true,unitLabel:'€/arcata',disc:waxup?discUnit*el:0};
+}
+
+function calcBarre(cat){
+  const mk = getModLab();
+  const modName = getPillVal('pills-mod');
+  const matName = document.getElementById('sel-mat')?.value;
+  const n = safeInt(document.getElementById('inp-el')?.value,2);
+  const waxup = document.getElementById('chk-waxup')?.checked && mk==='a';
+  if(n<2||n>14) return {total:0,valid:false,errMsg:'Numero elementi non valido (2-14)'};
+  const key = getBarreKey(n);
+  if(!key) return {total:0,valid:false};
+  const prezzi = cat.prezzi[matName];
+  if(!prezzi) return {total:0,valid:false};
+  const base = prezzi[mk][key];
+  const disc = waxup ? (n<=4?cat.waxup.analog_24:cat.waxup.analog_514) : 0;
+  const total = base - disc;
+  const fascia = getBarreFascia(n);
+  let desc = `${cat.nome} — ${matName} (${modName}, ${fascia})`;
+  if(waxup&&disc) desc += ` [wax-up -${disc}€]`;
+  return {unit:base,qty:1,total,desc,valid:true,unitLabel:'€/fascia',disc:waxup?disc:0};
+}
+
+function calcStampa3D(cat){
+  const idx = safeInt(document.getElementById('sel-s3d')?.value,0);
+  const voce = STAMPA3D_VOCI[idx];
+  const qty = safeInt(document.getElementById('inp-el')?.value,1);
+  if(!voce) return {total:0,valid:false};
+  return {unit:voce.prezzo,qty,total:voce.prezzo*qty,desc:`Stampa 3D — ${voce.nome}`,valid:true};
+}
+
+function calcProgLab(cat){
+  const tipo = document.getElementById('sel-prog')?.value;
+  if(tipo==='full'){
+    return {unit:100,qty:1,total:100,desc:'Progettazione da Invio File — Full Arch',valid:true};
+  } else {
+    const el = safeInt(document.getElementById('inp-el')?.value,1);
+    return {unit:10,qty:el,total:10*el,desc:`Progettazione da Invio File — Per elemento (${el} el.)`,valid:true,unitLabel:'€/el'};
+  }
+}
+
+function calcServiziLab(cat){
+  const idx = safeInt(document.getElementById('sel-srv')?.value,0);
+  const voce = cat.voci[idx];
+  const qty = safeInt(document.getElementById('inp-el')?.value,1);
+  if(!voce) return {total:0,valid:false};
+  return {unit:voce.prezzo,qty,total:voce.prezzo*qty,desc:`Servizi — ${voce.nome}`,valid:true};
+}
+
+/* =====================================================================
+   PRICE PREVIEW
+===================================================================== */
+function updatePreview(){
+  const id = document.getElementById('sel-cat').value;
+  const cat = getCat(id);
+  const pp = document.getElementById('price-prev');
+  if(!cat){ pp.style.display='none'; return; }
+  const r = calcPrice(cat);
+  pp.style.display='flex';
+  pp.classList.remove('err-prev');
+  if(!r.valid || r.errMsg){
+    pp.classList.add('err-prev');
+    document.getElementById('prev-amt').textContent = r.errMsg || '—';
+    document.getElementById('prev-iva').textContent = '';
+    return;
+  }
+  document.getElementById('prev-amt').textContent = eur(r.total);
+  document.getElementById('prev-iva').textContent = ivaLbl(cat.iva);
+}
+
+/* =====================================================================
+   ADD / UPDATE ITEM
+===================================================================== */
+function addOrUpdate(){
+  const id = document.getElementById('sel-cat').value;
+  const cat = getCat(id);
+  if(!cat){ alert('Seleziona una categoria.'); return; }
+  const r = calcPrice(cat);
+  if(!r.valid){ alert(r.errMsg||'Dati non validi. Controlla i campi.'); return; }
+
+  const item = {
+    id: S.editingId || uid(),
+    catId: cat.id,
+    desc: r.desc,
+    unit: r.unit,
+    qty: r.qty,
+    vatRate: cat.iva,
+    total: r.total,
+    giorni: cat.giorni,
+    disc: r.disc||0,
+  };
+
+  if(S.editingId){
+    const idx = S.items.findIndex(i=>i.id===S.editingId);
+    if(idx>=0) S.items[idx]=item;
+    S.editingId=null;
+    document.getElementById('btn-add').textContent='+ Aggiungi al preventivo';
+    document.getElementById('btn-cancel').style.display='none';
+  } else {
+    S.items.push(item);
+    if(S.items.length===1) autoSaveHistory();
+  }
+
+  renderQuote();
+  renderTotals();
+  // reset form
+  document.getElementById('sel-cat').value='';
+  document.getElementById('dyn-form').innerHTML='';
+  document.getElementById('price-prev').style.display='none';
+}
+
+function cancelEdit(){
+  S.editingId=null;
+  document.getElementById('btn-add').textContent='+ Aggiungi al preventivo';
+  document.getElementById('btn-cancel').style.display='none';
+  document.getElementById('sel-cat').value='';
+  document.getElementById('dyn-form').innerHTML='';
+  document.getElementById('price-prev').style.display='none';
+}
+
+function removeItem(id){
+  S.items = S.items.filter(i=>i.id!==id);
+  renderQuote();
+  renderTotals();
+}
+
+function editItem(id){
+  const item = S.items.find(i=>i.id===id);
+  if(!item) return;
+  S.editingId = id;
+  document.getElementById('sel-cat').value = item.catId;
+  onCatChange();
+  document.getElementById('btn-add').textContent='&#10003; Aggiorna voce';
+  document.getElementById('btn-cancel').style.display='inline-flex';
+  // scroll to form
+  document.querySelector('.left-panel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* =====================================================================
+   RENDER QUOTE TABLE
+===================================================================== */
+function renderQuote(){
+  const body = document.getElementById('quote-body');
+  if(!S.items.length){
+    body.innerHTML=`<div class="empty">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+      </svg>
+      <p>Nessuna voce aggiunta.<br>Seleziona una categoria nel pannello a sinistra.</p>
+    </div>`;
+    document.getElementById('delivery-badge').innerHTML='';
+    return;
+  }
+
+  // delivery (escluse categorie senza tempi definiti)
+  const itemsWithDays = S.items.filter(i=>i.giorni);
+  if(itemsWithDays.length){
+    const parseRange = s=>{ const p=s.split('-'); return parseInt(p[p.length-1]); };
+    const maxDays = Math.max(...itemsWithDays.map(i=>parseRange(i.giorni)));
+    const minDays = Math.min(...itemsWithDays.map(i=>{ const p=i.giorni.split('-'); return parseInt(p[0]); }));
+    document.getElementById('delivery-badge').innerHTML=
+      `<span class="delivery-badge">&#9200; Consegna stimata: ${minDays}&ndash;${maxDays} giorni lavorativi</span>`;
+  } else {
+    document.getElementById('delivery-badge').innerHTML='';
+  }
+
+  const rows = S.items.map((item,idx)=>{
+    const ivaCl = ivaCls(item.vatRate);
+    const ivaLb = ivaLbl(item.vatRate);
+    return `<tr>
+      <td style="color:var(--g500);font-size:12px;width:28px">${idx+1}</td>
+      <td>
+        <div class="qt-desc">${escHtml(item.desc)}</div>
+        ${item.disc>0?`<div class="qt-sub">Sconto wax-up: &minus;${eur(item.disc)}</div>`:''}
+      </td>
+      <td class="num-col">${item.qty}</td>
+      <td class="num-col">${eur(item.unit)}</td>
+      <td class="num-col"><span class="ivab ${ivaCl}">${ivaLb}</span></td>
+      <td class="num-col"><strong>${eur(item.total)}</strong></td>
+      <td class="act-col no-print">
+        <button class="btn btn-gray btn-sm" onclick="editItem('${item.id}')" title="Modifica">&#9998;</button>
+        <button class="btn btn-red btn-sm" onclick="removeItem('${item.id}')" title="Elimina" style="margin-left:4px">&#215;</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  body.innerHTML=`<div class="qt-wrap"><table class="qt">
+    <thead><tr>
+      <th>#</th><th>Descrizione</th><th class="num-col">Qtà/El.</th>
+      <th class="num-col">P. Unit.</th><th class="num-col">IVA</th>
+      <th class="num-col">Totale</th><th class="no-print"></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+  updateStickyBar();
+}
+
+/* =====================================================================
+   RENDER TOTALS
+===================================================================== */
+function renderTotals(){
+  const imp0  = S.items.filter(i=>i.vatRate===0).reduce((s,i)=>s+i.total,0);
+  const imp4  = S.items.filter(i=>i.vatRate===4).reduce((s,i)=>s+i.total,0);
+  const imp22 = S.items.filter(i=>i.vatRate===22).reduce((s,i)=>s+i.total,0);
+  const totImp = imp0+imp4+imp22;
+  const iva4  = imp4*0.04;
+  const iva22 = imp22*0.22;
+
+  const shipAuto = totImp>0 && totImp<100 ? 10 : 0;
+  const shipEx   = S.ship.exchange ? 10 : 0;
+  const shipUrg  = S.ship.urgent  ? 35 : 0;
+  const totShip  = shipAuto+shipEx+shipUrg;
+
+  const grand = totImp+iva4+iva22+totShip;
+
+  let html = '';
+  if(imp0>0)  html+=`<div class="tot-row dim"><span>Imponibile 0% (Disp. Medici)</span><span class="tot-val">${eur(imp0)}</span></div>`;
+  if(imp4>0)  html+=`<div class="tot-row dim"><span>Imponibile 4% (Lab)</span><span class="tot-val">${eur(imp4)}</span></div>`;
+  if(imp22>0) html+=`<div class="tot-row dim"><span>Imponibile 22%</span><span class="tot-val">${eur(imp22)}</span></div>`;
+
+  if((imp0+imp4+imp22)>0){
+    html+=`<hr class="tot-sep">`;
+    if(iva4>0)  html+=`<div class="tot-row iva"><span>IVA 4%</span><span class="tot-val">${eur(iva4)}</span></div>`;
+    if(iva22>0) html+=`<div class="tot-row iva"><span>IVA 22%</span><span class="tot-val">${eur(iva22)}</span></div>`;
+    html+=`<hr class="tot-sep">`;
+    html+=`<div class="tot-row ship"><span>Spedizione</span><span class="tot-val">${shipAuto>0?eur(shipAuto):'Gratuita'}</span></div>`;
+    if(shipEx>0) html+=`<div class="tot-row ship"><span>Ritiro / Exchange</span><span class="tot-val">${eur(shipEx)}</span></div>`;
+    if(shipUrg>0) html+=`<div class="tot-row ship"><span>Urgente</span><span class="tot-val">${eur(shipUrg)}</span></div>`;
+    html+=`<hr class="tot-sep2">`;
+    html+=`<div class="tot-row grand"><span>TOTALE FINALE</span><span class="tot-val">${eur(grand)}</span></div>`;
+  }
+
+  if(!S.items.length){
+    html='<div style="color:var(--g500);font-size:13px;text-align:center;padding:20px 0">Aggiungi voci al preventivo per vedere il riepilogo.</div>';
+  }
+
+  document.getElementById('totals-body').innerHTML=html;
+
+  // ship auto message
+  document.getElementById('ship-auto-msg').textContent =
+    totImp===0 ? '' :
+    totImp<100 ? `Spedizione automatica: +10,00 € (imponibile < 100 €)` :
+    `Spedizione automatica: Gratuita (imponibile ≥ 100 €)`;
+
+  // update print fields
+  document.getElementById('pr-cliente').textContent = S.cliente||'—';
+  document.getElementById('pr-paziente').textContent = S.paziente||'—';
+  document.getElementById('pr-data').textContent = new Date().toLocaleDateString('it-IT');
+  document.getElementById('pr-num').textContent = S.quoteNum;
+}
+
+/* =====================================================================
+   MODAL HELPERS
+===================================================================== */
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+function confirmReset(){ openModal('modal-reset'); }
+function doReset(){
+  S.items=[];S.editingId=null;S.cliente='';S.paziente='';
+  S.ship.exchange=false;S.ship.urgent=false;
+  document.getElementById('inp-cliente').value='';
+  document.getElementById('inp-paziente').value='';
+  document.getElementById('chk-exchange').checked=false;
+  document.getElementById('chk-urgent').checked=false;
+  document.getElementById('sel-cat').value='';
+  document.getElementById('dyn-form').innerHTML='';
+  document.getElementById('price-prev').style.display='none';
+  document.getElementById('btn-cancel').style.display='none';
+  document.getElementById('btn-add').textContent='+ Aggiungi al preventivo';
+  // chiudi accordion dati cliente
+  const ab=document.getElementById('acc-body-dati');
+  const abtn=document.getElementById('acc-btn-dati');
+  if(ab){ ab.style.display='none'; }
+  if(abtn){ abtn.classList.remove('open'); }
+  S.quoteNum=Math.floor(Date.now()/1000);
+  renderQuote();renderTotals();updateStickyBar();
+  closeModal('modal-reset');
+}
+
+/* =====================================================================
+   EXPORT PDF (jsPDF — lato client, nessuna finestra di stampa)
+===================================================================== */
+function handlePrint(){
+  if(!S.items.length){ alert('Aggiungi almeno una voce al preventivo prima di esportare.'); return; }
+  if(!window.jspdf){ alert('Libreria jsPDF non caricata. Verifica la connessione.'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'p', unit:'mm', format:'a4' });
+  const W=210, H=297, ML=15, MR=15;
+  const cW = W-ML-MR;
+  let y = ML;
+
+  const TEAL=[13,148,136], DARK=[17,24,39], GRAY=[107,114,128], LGRAY=[200,200,200], LIGHT=[243,244,246];
+
+  function sf(style,size){ doc.setFont('helvetica',style); doc.setFontSize(size); }
+  function tc(rgb){ doc.setTextColor(rgb[0],rgb[1],rgb[2]); }
+  function fill(fx,fy,fw,fh,c){ doc.setFillColor(c[0],c[1],c[2]); doc.rect(fx,fy,fw,fh,'F'); }
+  function hline(fy,c){ c=c||LGRAY; doc.setDrawColor(c[0],c[1],c[2]); doc.line(ML,fy,W-MR,fy); }
+  function newPageIfNeeded(need){
+    if(y+need>H-18){ doc.addPage(); y=ML; }
+  }
+
+  // ── HEADER ──
+  fill(ML,y,cW,22,DARK);
+  fill(ML+3,y+4,14,14,TEAL);
+  sf('bold',11); doc.setTextColor(255,255,255); doc.text('JD',ML+10,y+13,{align:'center'});
+  sf('bold',14); doc.text('JD Milling Center',ML+22,y+11);
+  sf('normal',7); doc.setTextColor(204,251,241); doc.text('LISTINO LABORATORI ODONTOTECNICI \u2014 REV.03',ML+22,y+17);
+  y+=26;
+
+  // ── META ──
+  sf('normal',9); tc(GRAY);
+  doc.text('Data: '+new Date().toLocaleDateString('it-IT'), ML, y);
+  doc.text('Preventivo n\u00b0: '+S.quoteNum, W-MR, y, {align:'right'});
+  y+=5;
+  sf('normal',9); tc(DARK);
+  if(S.cliente){ sf('bold',9); doc.text('Cliente: ',ML,y); sf('normal',9); doc.text(S.cliente,ML+20,y); y+=5; }
+  if(S.paziente){ sf('bold',9); doc.text('Paziente/Note: ',ML,y); sf('normal',9); doc.text(S.paziente,ML+34,y); y+=5; }
+  sf('normal',9); tc(TEAL);
+  doc.text('Listino Laboratori Odontotecnici \u2014 Rev.03',ML,y);
+  y+=6; hline(y,DARK); y+=4;
+
+  // ── TABLE HEADER ──
+  fill(ML,y,cW,7,LIGHT);
+  sf('bold',8); tc(GRAY);
+  const C={desc:{x:ML+2,w:82},qty:{x:ML+84,w:14},unit:{x:ML+98,w:26},iva:{x:ML+124,w:16},tot:{x:ML+140,w:cW-142}};
+  doc.text('Descrizione',C.desc.x,y+5);
+  doc.text('Qt\u00e0/El.',C.qty.x+C.qty.w,y+5,{align:'right'});
+  doc.text('P. Unitario',C.unit.x+C.unit.w,y+5,{align:'right'});
+  doc.text('IVA',C.iva.x+C.iva.w/2,y+5,{align:'center'});
+  doc.text('Totale',C.tot.x+C.tot.w,y+5,{align:'right'});
+  y+=8;
+
+  // ── TABLE ROWS ──
+  S.items.forEach((item,i)=>{
+    newPageIfNeeded(10);
+    if(i%2===0) fill(ML,y,cW,8,[249,250,251]);
+    sf('normal',8); tc(DARK);
+    const rawDesc = item.desc;
+    const lines = doc.splitTextToSize(rawDesc, C.desc.w-2);
+    const rh = Math.max(8, lines.length*4.5+2);
+    newPageIfNeeded(rh);
+    if(i%2===0) fill(ML,y,cW,rh,[249,250,251]);
+    doc.text(lines, C.desc.x, y+5);
+    if(item.disc>0){ sf('italic',7); tc(GRAY); doc.text('Sconto wax-up: -'+eur(item.disc),C.desc.x,y+rh-1.5); }
+    sf('normal',8); tc(DARK);
+    doc.text(String(item.qty), C.qty.x+C.qty.w, y+5, {align:'right'});
+    doc.text(eur(item.unit), C.unit.x+C.unit.w, y+5, {align:'right'});
+    const ivaC=item.vatRate===0?[22,101,52]:item.vatRate===4?[30,64,175]:[146,64,14];
+    tc(ivaC); doc.text('IVA '+item.vatRate+'%',C.iva.x+C.iva.w/2,y+5,{align:'center'});
+    sf('bold',8); tc(DARK); doc.text(eur(item.total),C.tot.x+C.tot.w,y+5,{align:'right'});
+    y+=rh;
+  });
+
+  newPageIfNeeded(10); hline(y,DARK); y+=5;
+
+  // ── TOTALS ──
+  const imp0 =S.items.filter(i=>i.vatRate===0).reduce((s,i)=>s+i.total,0);
+  const imp4 =S.items.filter(i=>i.vatRate===4).reduce((s,i)=>s+i.total,0);
+  const imp22=S.items.filter(i=>i.vatRate===22).reduce((s,i)=>s+i.total,0);
+  const totImp=imp0+imp4+imp22;
+  const iva4=imp4*0.04, iva22=imp22*0.22;
+  const shipAuto=totImp>0&&totImp<100?10:0;
+  const shipEx=S.ship.exchange?10:0, shipUrg=S.ship.urgent?35:0;
+  const grand=totImp+iva4+iva22+shipAuto+shipEx+shipUrg;
+  const TX=ML+cW*0.55;
+
+  function trow(lbl,val,bold){
+    newPageIfNeeded(7);
+    sf(bold?'bold':'normal', bold?10:9);
+    tc(bold?DARK:GRAY);
+    doc.text(lbl,TX,y); doc.text(val,W-MR,y,{align:'right'});
+    y+=bold?7:5;
+  }
+  if(imp0>0)  trow('Imponibile 0% (Disp. Medici)',eur(imp0));
+  if(imp4>0)  trow('Imponibile 4% (Lab)',eur(imp4));
+  if(imp22>0) trow('Imponibile 22%',eur(imp22));
+  if(iva4>0||iva22>0){ newPageIfNeeded(4); hline(y); y+=4; }
+  if(iva4>0)  trow('IVA 4%',eur(iva4));
+  if(iva22>0) trow('IVA 22%',eur(iva22));
+  newPageIfNeeded(4); hline(y); y+=4;
+  trow('Spedizione', shipAuto>0?eur(shipAuto):'Gratuita');
+  if(shipEx>0)  trow('Ritiro / Exchange',eur(shipEx));
+  if(shipUrg>0) trow('Urgente',eur(shipUrg));
+  newPageIfNeeded(10); hline(y,DARK); y+=4;
+  trow('TOTALE FINALE',eur(grand),true);
+
+  // ── DISCLAIMER ──
+  const discY=H-12;
+  hline(discY); sf('italic',7); tc(GRAY);
+  doc.text('La componentistica protesica \u00e8 esclusa dai prezzi indicati \u2014 Prezzi IVA esclusa salvo diversa indicazione.',W/2,discY+5,{align:'center'});
+
+  doc.save('Preventivo_JD_'+S.quoteNum+'.pdf');
+}
+
+/* =====================================================================
+   HISTORY
+===================================================================== */
+const LS_KEY = 'jd_prev_history';
+
+function autoSaveHistory(){
+  const hist = loadHistory();
+  const snap = {
+    id: S.quoteNum,
+    date: new Date().toLocaleDateString('it-IT'),
+    clientType: S.clientType,
+    cliente: S.cliente,
+    paziente: S.paziente,
+    items: JSON.parse(JSON.stringify(S.items)),
+    ship: {...S.ship},
+  };
+  hist.unshift(snap);
+  if(hist.length>10) hist.length=10;
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(hist)); }catch(e){}
+}
+
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; }
+}
+
+let _pendingLoad = null;
+function showHistory(){
+  const hist = loadHistory();
+  const list = document.getElementById('hist-list');
+  if(!hist.length){
+    list.innerHTML='<div class="hist-empty">Nessun preventivo in storico.</div>';
+  } else {
+    list.innerHTML = hist.map((h,i)=>{
+      const imp = h.items.reduce((s,it)=>s+it.total,0);
+      return `<div class="hist-item" onclick="requestLoadHist(${i})">
+        <div class="hist-item-t">${escHtml(h.cliente||'(senza cliente)')} &mdash; ${h.date}</div>
+        <div class="hist-item-s">${h.clientType==='studi'?'Studio':'Laboratorio'} &mdash; ${h.items.length} voce/i &mdash; Totale imponibile: ${eur(imp)}</div>
+      </div>`;
+    }).join('');
+  }
+  openModal('modal-history');
+}
+
+function requestLoadHist(idx){
+  _pendingLoad = idx;
+  closeModal('modal-history');
+  if(S.items.length){
+    openModal('modal-load-hist');
+  } else {
+    doLoadHist();
+  }
+}
+
+function doLoadHist(){
+  const hist = loadHistory();
+  const h = hist[_pendingLoad];
+  if(!h){ closeModal('modal-load-hist'); return; }
+  S.clientType = h.clientType||'lab';
+  S.cliente = h.cliente||'';
+  S.paziente = h.paziente||'';
+  S.items = h.items||[];
+  S.ship = h.ship||{exchange:false,urgent:false};
+  S.quoteNum = h.id;
+  document.getElementById('inp-cliente').value = S.cliente;
+  document.getElementById('inp-paziente').value = S.paziente;
+  document.getElementById('chk-exchange').checked = S.ship.exchange;
+  document.getElementById('chk-urgent').checked = S.ship.urgent;
+  populateCatSelect();
+  document.getElementById('sel-cat').value='';
+  document.getElementById('dyn-form').innerHTML='';
+  document.getElementById('price-prev').style.display='none';
+  renderQuote();renderTotals();updateStickyBar();
+  closeModal('modal-load-hist');
+  _pendingLoad=null;
+}
+
+/* =====================================================================
+   ACCORDION
+===================================================================== */
+function toggleAccordion(btnId, bodyId){
+  const btn  = document.getElementById(btnId);
+  const body = document.getElementById(bodyId);
+  if(!btn||!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  btn.classList.toggle('open', !isOpen);
+}
+
+/* =====================================================================
+   STICKY PDF BAR
+===================================================================== */
+function updateStickyBar(){
+  const bar  = document.getElementById('sticky-pdf');
+  const info = document.getElementById('sticky-pdf-info');
+  if(!bar) return;
+  const n = S.items.length;
+  if(n === 0){
+    bar.classList.remove('visible');
+    document.body.classList.remove('has-sticky');
+  } else {
+    const imp = S.items.reduce((s,i)=>s+i.total,0);
+    info.innerHTML = `<strong>${n} voce${n>1?'':''}${n>1?' aggiunte':' aggiunta'}</strong>Imponibile: ${eur(imp)}`;
+    bar.classList.add('visible');
+    document.body.classList.add('has-sticky');
+  }
+}
+
+/* =====================================================================
+   UTILS
+===================================================================== */
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* =====================================================================
+   INIT
+===================================================================== */
+function init(){
+  populateCatSelect();
+  renderQuote();
+  renderTotals();
+  initPWA();
+}
+
+function initPWA(){
+  /* Service Worker */
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+
+  /* Apple Touch Icon generata via canvas (PNG in-memory, nessun file esterno) */
+  try{
+    const sz=180;
+    const cv=document.createElement('canvas');
+    cv.width=cv.height=sz;
+    const cx=cv.getContext('2d');
+    /* sfondo scuro */
+    cx.fillStyle='#111827';
+    cx.fillRect(0,0,sz,sz);
+    /* quadrato teal con angoli arrotondati */
+    const r=28,x=16,y=16,w=sz-32,h=sz-32;
+    cx.fillStyle='#0d9488';
+    cx.beginPath();
+    cx.moveTo(x+r,y);cx.lineTo(x+w-r,y);cx.arcTo(x+w,y,x+w,y+r,r);
+    cx.lineTo(x+w,y+h-r);cx.arcTo(x+w,y+h,x+w-r,y+h,r);
+    cx.lineTo(x+r,y+h);cx.arcTo(x,y+h,x,y+h-r,r);
+    cx.lineTo(x,y+r);cx.arcTo(x,y,x+r,y,r);
+    cx.closePath();cx.fill();
+    /* testo JD */
+    cx.fillStyle='#ffffff';
+    cx.font='bold 76px -apple-system,Arial,sans-serif';
+    cx.textAlign='center';cx.textBaseline='middle';
+    cx.fillText('JD',sz/2,sz/2+3);
+    /* applica come apple-touch-icon */
+    const lnk=document.createElement('link');
+    lnk.rel='apple-touch-icon';
+    lnk.href=cv.toDataURL('image/png');
+    document.head.appendChild(lnk);
+  }catch(e){}
+}
+
+init();
+</script>
+</body>
+</html>

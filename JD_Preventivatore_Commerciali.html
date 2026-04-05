@@ -1,0 +1,2343 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d9488">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="JD Preventivatore Commerciali">
+<link rel="manifest" href="manifest.json">
+<title>JD Preventivatore Commerciali — JD Milling Center</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0d9488;--teal-d:#0f766e;--teal-l:#ccfbf1;--teal-ll:#f0fdfa;
+  --g900:#111827;--g700:#374151;--g500:#6b7280;--g300:#d1d5db;--g200:#e5e7eb;--g100:#f3f4f6;
+  --white:#fff;--red:#ef4444;--red-l:#fee2e2;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--g100);color:var(--g900);font-size:14px;min-height:100vh}
+
+/* HEADER */
+.hdr{background:var(--g900);color:var(--white);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-box{width:42px;height:42px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;letter-spacing:-1px;color:#fff;flex-shrink:0}
+.logo-t{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.logo-s{font-size:10px;color:var(--teal-l);letter-spacing:1.2px;text-transform:uppercase;margin-top:1px}
+.hdr-btns{display:flex;gap:8px;flex-shrink:0}
+
+/* TAB BAR */
+.tab-bar{background:var(--g900);padding:0 20px;display:flex;gap:0;border-top:1px solid rgba(255,255,255,.1)}
+.tab-btn{padding:10px 20px;border:none;background:transparent;color:var(--g300);font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;font-family:inherit}
+.tab-btn:hover{color:#fff}
+.tab-btn.active{color:var(--teal-l);border-bottom-color:var(--teal)}
+
+/* LAYOUT */
+.main{max-width:1280px;margin:0 auto;padding:20px;display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+
+/* CARD */
+.card{background:var(--white);border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden;margin-bottom:16px}
+.card:last-child{margin-bottom:0}
+.card-hd{padding:13px 18px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between}
+.card-hd h3{font-size:13px;font-weight:700;color:var(--g700);text-transform:uppercase;letter-spacing:.5px}
+.card-bd{padding:18px}
+
+/* TOGGLE */
+.toggle{display:flex;background:var(--g100);border-radius:8px;padding:3px;margin-bottom:18px}
+.toggle button{flex:1;padding:7px 8px;border:none;background:transparent;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;color:var(--g500);transition:all .15s;line-height:1.3}
+.toggle button.on{background:var(--white);color:var(--teal-d);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* FORM */
+.fg{margin-bottom:13px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--g300);border-radius:6px;font-size:13px;color:var(--g900);background:var(--white);transition:border-color .15s;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+textarea{resize:vertical;min-height:56px}
+input.err,select.err{border-color:var(--red)}
+.err-msg{font-size:11px;color:var(--red);margin-top:3px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* RADIO PILLS */
+.pills{display:flex;gap:6px}
+.pill{flex:1;padding:7px;border:1.5px solid var(--g300);border-radius:6px;font-size:12px;font-weight:500;color:var(--g500);cursor:pointer;text-align:center;transition:all .15s;user-select:none}
+.pill.on{border-color:var(--teal);background:var(--teal-l);color:var(--teal-d);font-weight:700}
+
+/* CHECKBOX */
+.chk-row{display:flex;align-items:center;gap:8px;padding:6px 0;cursor:pointer;font-size:13px;color:var(--g700)}
+.chk-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--teal);flex-shrink:0;cursor:pointer}
+
+/* PRICE PREVIEW */
+.price-prev{background:var(--teal-ll);border:1px solid #99f6e4;border-radius:8px;padding:11px 14px;margin:14px 0;display:flex;align-items:center;justify-content:space-between}
+.price-prev .pl{font-size:11px;color:var(--teal-d);font-weight:600}
+.price-prev .pr{display:flex;align-items:baseline;gap:8px}
+.price-prev .amt{font-size:22px;font-weight:800;color:var(--teal-d);font-variant-numeric:tabular-nums}
+.price-prev .ivab{font-size:11px;background:rgba(15,118,110,.15);color:var(--teal-d);padding:2px 6px;border-radius:4px;font-weight:700}
+.price-prev.err-prev{background:#fff1f2;border-color:#fca5a5}
+.price-prev.err-prev .pl,.price-prev.err-prev .amt{color:var(--red)}
+
+/* BUTTONS */
+.btn{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:5px;font-family:inherit}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:var(--teal-d)}
+.btn-gray{background:var(--g100);color:var(--g700)}.btn-gray:hover{background:var(--g200)}
+.btn-red{background:var(--red-l);color:var(--red)}.btn-red:hover{background:#fecaca}
+.btn-sm{padding:5px 9px;font-size:12px}
+.btn-full{width:100%;justify-content:center}
+.btn-row{display:flex;gap:8px;margin-top:4px}
+
+/* NOTE */
+.note{font-size:11px;color:var(--g500);font-style:italic;padding:5px 0}
+.note-warn{font-size:11px;color:#92400e;background:#fef3c7;border-radius:4px;padding:4px 8px;margin-top:4px}
+
+/* SECTION TITLE */
+.sec-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--teal);padding:6px 0 4px;border-bottom:1px solid var(--teal-l);margin-bottom:10px}
+
+/* QUOTE TABLE */
+.qt-wrap{overflow-x:auto}
+table.qt{width:100%;border-collapse:collapse;font-size:13px}
+table.qt th{background:var(--g100);padding:9px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g500);white-space:nowrap}
+table.qt td{padding:10px;border-bottom:1px solid var(--g100);vertical-align:top}
+table.qt tr:last-child td{border-bottom:none}
+table.qt tbody tr:hover td{background:#fafafa}
+.qt-desc{font-weight:600;font-size:13px;line-height:1.3}
+.qt-sub{font-size:11px;color:var(--g500);margin-top:2px}
+.num-col{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.act-col{white-space:nowrap;text-align:center}
+
+/* IVA BADGES */
+.ivab{display:inline-block;font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px}
+.iva0{background:#dcfce7;color:#166534}
+.iva4{background:#dbeafe;color:#1e40af}
+.iva22{background:#fef3c7;color:#92400e}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:40px 20px;color:var(--g500)}
+.empty svg{display:block;margin:0 auto 12px;opacity:.3}
+.empty p{font-size:14px}
+
+/* SHIPPING */
+.ship-box{background:var(--g100);border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.ship-auto{font-size:12px;color:var(--g500);margin-top:6px}
+
+/* TOTALS */
+.tot-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+.tot-row.dim{color:var(--g500)}
+.tot-row.iva{color:var(--g700)}
+.tot-row.ship{color:var(--g700)}
+.tot-sep{border:none;border-top:1px solid var(--g200);margin:6px 0}
+.tot-sep2{border:none;border-top:2px solid var(--g900);margin:8px 0}
+.tot-row.grand{font-size:18px;font-weight:800;padding-top:4px}
+.tot-val{font-variant-numeric:tabular-nums;text-align:right}
+.delivery-badge{display:inline-flex;align-items:center;gap:5px;background:var(--teal-ll);border:1px solid #99f6e4;color:var(--teal-d);font-size:12px;font-weight:700;padding:5px 10px;border-radius:6px;margin-bottom:14px}
+
+/* DISCLAIMER */
+.disclaimer{font-size:11px;color:var(--g500);font-style:italic;padding:12px 18px;border-top:1px solid var(--g100);text-align:center}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999}
+.modal{background:var(--white);border-radius:12px;padding:24px;max-width:440px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;margin-bottom:8px}
+.modal p{color:var(--g500);font-size:13px;margin-bottom:18px;line-height:1.5}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.hist-list{max-height:360px;overflow-y:auto;margin-bottom:16px}
+.hist-item{padding:10px 12px;border:1px solid var(--g200);border-radius:6px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.hist-item:hover{border-color:var(--teal);background:var(--teal-ll)}
+.hist-item-t{font-weight:600;font-size:13px}
+.hist-item-s{font-size:11px;color:var(--g500);margin-top:2px}
+.hist-empty{text-align:center;color:var(--g500);padding:20px;font-size:13px}
+
+/* PRINT */
+@media print{
+  body{background:#fff;font-size:12px}
+  .no-print{display:none!important}
+  .main{display:block;max-width:100%;padding:0}
+  .left-panel{display:none}
+  .card{box-shadow:none;margin-bottom:12px}
+  .hdr{background:#fff!important;color:#000!important;border-bottom:2px solid #000;padding:10px 0}
+  .logo-box{background:var(--teal)!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .hdr-btns{display:none}
+  .print-header{display:block!important}
+  table.qt th{background:#f3f4f6!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .ship-box{background:#f3f4f6!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .ivab{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .delivery-badge{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  @page{margin:15mm}
+}
+.print-header{display:none}
+
+/* ── MOBILE-FIRST OVERRIDES ──────────────────────────────────── */
+@media(max-width:767px){
+  body{font-size:15px}
+  .hdr{padding:10px 14px;gap:8px}
+  .logo-t{font-size:16px}
+  .logo-s{display:none}
+  .logo-box{width:36px;height:36px;font-size:15px}
+  .hdr-btns{gap:6px}
+  .hdr-btns .btn{min-height:40px;padding:8px 10px}
+  .btn-label{display:none}
+  .main{padding:12px;gap:12px;padding-bottom:16px}
+  .card-bd{padding:14px}
+  .card-hd{padding:11px 14px}
+  .toggle{margin-bottom:14px}
+  .toggle button{padding:9px 6px;font-size:11px;min-height:44px;line-height:1.2}
+  input[type=text],input[type=number],input[type=date],select,textarea{
+    font-size:16px;padding:10px 12px;min-height:44px;
+  }
+  textarea{min-height:64px}
+  .btn{min-height:44px;padding:10px 14px;font-size:14px;border-radius:8px}
+  .btn-sm{min-height:38px;padding:7px 11px;font-size:13px}
+  .btn-full{min-height:48px;font-size:15px}
+  .pill{min-height:44px;padding:10px 6px;font-size:13px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .chk-row{padding:8px 0;gap:10px}
+  .chk-row input[type=checkbox]{width:22px;height:22px;flex-shrink:0}
+  .row2{gap:8px}
+  table.qt{font-size:12px}
+  table.qt th{padding:8px 6px;font-size:9px}
+  table.qt td{padding:8px 6px}
+  .qt-desc{font-size:12px}
+  .tot-row{font-size:14px}
+  .tot-row.grand{font-size:17px}
+  .modal{
+    position:fixed;bottom:0;left:0;right:0;
+    max-width:100%;width:100%;
+    border-radius:16px 16px 0 0;
+    padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+    margin:0;
+  }
+  .hist-list{max-height:50vh}
+  .price-prev .amt{font-size:26px}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+}
+
+@media(max-width:360px){
+  .row2{grid-template-columns:1fr}
+}
+
+@media(min-width:768px) and (max-width:900px){
+  .main{padding:16px;gap:16px}
+  input[type=text],input[type=number],input[type=date],select,textarea{font-size:16px}
+  .btn{min-height:44px}
+  .pill{min-height:44px}
+}
+
+/* ── TIPO CLIENTE STRIP ─────────────────────────────────────── */
+.tipo-strip{margin-bottom:12px}
+.tipo-strip .toggle{margin-bottom:0}
+.tipo-strip .card-bd{padding:12px 14px}
+
+/* ── CARD PRINCIPALE (Aggiungi Lavorazione) ─────────────────── */
+.card-main{border-top:3px solid var(--teal)}
+.card-main .card-hd{background:var(--teal-ll)}
+.card-main .card-hd h3{color:var(--teal-d);font-size:14px}
+
+/* ── ACCORDION Dati cliente ──────────────────────────────────── */
+.acc-card{overflow:visible}
+.acc-card .card-hd,.acc-card>.card-bd{display:none}
+.acc-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:13px 18px;background:transparent;border:none;cursor:pointer;
+  font-size:13px;font-weight:600;color:var(--g700);text-align:left;
+  transition:background .15s;border-radius:10px;
+}
+.acc-btn:hover{background:var(--g100)}
+.acc-btn.open{color:var(--teal-d);background:var(--teal-ll);border-radius:10px 10px 0 0}
+.acc-icon{font-size:12px;transition:transform .2s;flex-shrink:0;margin-left:8px;color:var(--g500)}
+.acc-btn.open .acc-icon{transform:rotate(90deg);color:var(--teal-d)}
+.acc-body{padding:14px 18px 16px;border-top:1px solid var(--teal-l)}
+
+/* ── STICKY PDF BAR ──────────────────────────────────────────── */
+.sticky-pdf{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--g900);
+  box-shadow:0 -2px 16px rgba(0,0,0,.3);
+  padding:10px 20px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+  transform:translateY(100%);
+  transition:transform .25s ease;
+}
+.sticky-pdf.visible{transform:translateY(0)}
+.sticky-pdf-inner{
+  max-width:1280px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.sticky-pdf-info{color:var(--g300);font-size:13px;line-height:1.3}
+.sticky-pdf-info strong{color:#fff;display:block;font-size:14px}
+.sticky-pdf-btn{min-height:46px;font-size:14px;padding:10px 22px;white-space:nowrap}
+body.has-sticky .main{padding-bottom:80px}
+@media(max-width:767px){body.has-sticky .main{padding-bottom:90px}}
+
+/* ══════════════════════════════════════════════════════════════
+   PACCHETTI & OFFERTE — CSS
+══════════════════════════════════════════════════════════════ */
+
+/* SEMAFORI */
+.sf-dot{width:20px;height:20px;border-radius:50%;display:inline-block;flex-shrink:0}
+.sf-green .sf-dot{background:#22c55e}
+.sf-yellow .sf-dot{background:#eab308}
+.sf-red .sf-dot{background:#ef4444}
+.sf-gray .sf-dot{background:#9ca3af}
+.sf-label-green{color:#166534;font-weight:700;font-size:12px}
+.sf-label-yellow{color:#854d0e;font-weight:700;font-size:12px}
+.sf-label-red{color:#991b1b;font-weight:700;font-size:12px}
+
+/* TABELLA RIGHE PACCHETTO */
+table.pkg-table{width:100%;border-collapse:collapse;font-size:13px}
+table.pkg-table th{background:var(--g100);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g500)}
+table.pkg-table td{padding:9px 10px;border-bottom:1px solid var(--g100);vertical-align:middle}
+table.pkg-table tr:last-child td{border-bottom:none}
+.pkg-min-price{font-size:11px;color:var(--g500);margin-top:2px}
+
+/* RIEPILOGO PACCHETTO */
+.pkg-summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.pkg-sum-card{background:var(--g100);border-radius:8px;padding:14px;text-align:center}
+.pkg-sum-card .val{font-size:20px;font-weight:800;color:var(--g900)}
+.pkg-sum-card .lbl{font-size:11px;color:var(--g500);margin-top:3px}
+.pkg-sum-card.highlight{background:var(--teal-ll);border:1px solid #99f6e4}
+.pkg-sum-card.highlight .val{color:var(--teal-d)}
+.pkg-sum-card.warn{background:#fff7ed;border:1px solid #fed7aa}
+.pkg-sum-card.warn .val{color:#c2410c}
+
+/* STORICO OFFERTE */
+.pkg-hist-item{padding:12px 14px;border:1px solid var(--g200);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.pkg-hist-item:hover{border-color:var(--teal);background:var(--teal-ll)}
+
+@media(max-width:600px){
+  .pkg-summary{grid-template-columns:1fr}
+  table.pkg-table{font-size:12px}
+  table.pkg-table th,table.pkg-table td{padding:6px 6px}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<header class="hdr no-print">
+  <div class="logo">
+    <div class="logo-box">JD</div>
+    <div>
+      <div class="logo-t">JD Milling Center</div>
+      <div class="logo-s">Versione Commerciali</div>
+    </div>
+  </div>
+  <div class="hdr-btns">
+    <button class="btn btn-gray" onclick="showHistory()">&#9776; <span class="btn-label">Storico</span></button>
+    <button class="btn btn-red" onclick="confirmReset()">&#10005; <span class="btn-label">Reset</span></button>
+  </div>
+</header>
+
+<!-- TAB BAR -->
+<div class="tab-bar no-print">
+  <button class="tab-btn active" id="tab-prev" onclick="switchTab('prev')">Preventivo</button>
+  <button class="tab-btn" id="tab-pkg" onclick="switchTab('pkg')">Pacchetti &amp; Offerte</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     VISTA PREVENTIVO
+══════════════════════════════════════════════════════════════ -->
+<div id="view-prev">
+<div class="main">
+  <!-- LEFT PANEL -->
+  <div class="left-panel no-print">
+
+    <!-- 1. Tipo cliente -->
+    <div class="card tipo-strip">
+      <div class="card-bd">
+        <div class="toggle">
+          <button id="btn-studi" class="on" onclick="setClient('studi')">Studi Odontoiatrici<br><small>Listino Rev.08</small></button>
+          <button id="btn-lab" onclick="setClient('lab')">Laboratori Odontotecnici<br><small>Listino Lab Rev.03</small></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Aggiungi Lavorazione -->
+    <div class="card card-main">
+      <div class="card-hd"><h3>Aggiungi lavorazione</h3></div>
+      <div class="card-bd">
+        <div class="fg"><label>Categoria</label>
+          <select id="sel-cat" onchange="onCatChange()">
+            <option value="">— Seleziona categoria —</option>
+          </select>
+        </div>
+        <div id="dyn-form"></div>
+        <div id="price-prev" class="price-prev" style="display:none">
+          <span class="pl">Prezzo calcolato</span>
+          <div class="pr"><span class="amt" id="prev-amt">—</span><span class="ivab" id="prev-iva">IVA 0%</span></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-teal btn-full" id="btn-add" onclick="addOrUpdate()">+ Aggiungi al preventivo</button>
+          <button class="btn btn-gray" id="btn-cancel" style="display:none" onclick="cancelEdit()">Annulla</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Dati cliente: accordion -->
+    <div class="card acc-card">
+      <button class="acc-btn" id="acc-btn-dati" onclick="toggleAccordion('acc-btn-dati','acc-body-dati')">
+        <span>Dati cliente <span style="font-weight:400;opacity:.65">(opzionale)</span></span>
+        <span class="acc-icon" id="acc-icon-dati">&#9654;</span>
+      </button>
+      <div id="acc-body-dati" class="acc-body" style="display:none">
+        <div class="fg"><label>Cliente</label><input type="text" id="inp-cliente" placeholder="Nome studio / laboratorio" oninput="S.cliente=this.value"></div>
+        <div class="fg" style="margin-bottom:0"><label>Paziente / Note</label><textarea id="inp-paziente" placeholder="Nome paziente, riferimento caso..." oninput="S.paziente=this.value"></textarea></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <!-- Print header -->
+    <div class="print-header card" style="padding:16px 18px">
+      <div class="logo" style="margin-bottom:8px">
+        <div class="logo-box">JD</div>
+        <div><div class="logo-t">JD Milling Center</div><div class="logo-s">Preventivatore Lavorazioni</div></div>
+      </div>
+      <div style="display:flex;gap:32px;font-size:12px;margin-top:8px">
+        <div><strong>Cliente:</strong> <span id="pr-cliente">—</span></div>
+        <div><strong>Paziente/Note:</strong> <span id="pr-paziente">—</span></div>
+        <div><strong>Data:</strong> <span id="pr-data">—</span></div>
+        <div><strong>Preventivo n°:</strong> <span id="pr-num">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <h3>Voci Preventivo</h3>
+        <div id="delivery-badge"></div>
+      </div>
+      <div class="card-bd" style="padding:0">
+        <div id="quote-body"></div>
+      </div>
+      <div class="disclaimer">
+        La componentistica protesica &egrave; esclusa dai prezzi indicati &mdash; Prezzi IVA esclusa salvo diversa indicazione.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><h3>Riepilogo e Spedizione</h3></div>
+      <div class="card-bd">
+        <div class="ship-box">
+          <div style="font-size:12px;font-weight:700;color:var(--g700);margin-bottom:6px">Opzioni spedizione</div>
+          <label class="chk-row"><input type="checkbox" id="chk-exchange" onchange="S.ship.exchange=this.checked;renderTotals()"> Ritiro / Exchange &nbsp;<strong>+10,00 &euro;</strong></label>
+          <label class="chk-row"><input type="checkbox" id="chk-urgent" onchange="S.ship.urgent=this.checked;renderTotals()"> Urgente &nbsp;<strong>+35,00 &euro;</strong></label>
+          <div class="ship-auto" id="ship-auto-msg"></div>
+        </div>
+        <div id="totals-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /view-prev -->
+
+<!-- ══════════════════════════════════════════════════════════════
+     VISTA PACCHETTI & OFFERTE
+══════════════════════════════════════════════════════════════ -->
+<div id="view-pkg" style="display:none">
+  <div class="main" style="display:block;max-width:900px">
+
+    <!-- Tab interni: Nuova Offerta / Storico -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn btn-teal" id="pkg-tab-edit" onclick="pkgSwitchView('edit')">+ Nuova Offerta</button>
+      <button class="btn btn-gray" id="pkg-tab-hist" onclick="pkgSwitchView('history')">Storico Offerte</button>
+    </div>
+
+    <!-- VISTA EDIT -->
+    <div id="pkg-edit-view">
+      <!-- renderPkgEdit() scrive qui -->
+    </div>
+
+    <!-- VISTA HISTORY -->
+    <div id="pkg-hist-view" style="display:none">
+      <!-- renderPkgHistory() scrive qui -->
+    </div>
+
+  </div>
+</div><!-- /view-pkg -->
+
+<!-- STICKY PDF BAR -->
+<div class="sticky-pdf no-print" id="sticky-pdf">
+  <div class="sticky-pdf-inner">
+    <div class="sticky-pdf-info" id="sticky-pdf-info"></div>
+    <button class="btn btn-teal sticky-pdf-btn" id="sticky-pdf-btn" onclick="handlePrint()">&#9113;&nbsp; Esporta PDF</button>
+  </div>
+</div>
+
+<!-- CONFIRM RESET MODAL -->
+<div class="overlay" id="modal-reset" style="display:none">
+  <div class="modal">
+    <h3>Conferma Reset</h3>
+    <p>Vuoi cancellare tutto il preventivo corrente? L'operazione non &egrave; reversibile.</p>
+    <div class="modal-btns">
+      <button class="btn btn-gray" onclick="closeModal('modal-reset')">Annulla</button>
+      <button class="btn btn-red" onclick="doReset()">Svuota preventivo</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY MODAL -->
+<div class="overlay" id="modal-history" style="display:none" onclick="if(event.target===this)closeModal('modal-history')">
+  <div class="modal" style="max-width:520px">
+    <h3>Storico preventivi</h3>
+    <p>Gli ultimi 10 preventivi salvati automaticamente al momento dell'aggiunta della prima voce.</p>
+    <div class="hist-list" id="hist-list"></div>
+    <div class="modal-btns"><button class="btn btn-gray" onclick="closeModal('modal-history')">Chiudi</button></div>
+  </div>
+</div>
+
+<!-- LOAD HISTORY CONFIRM -->
+<div class="overlay" id="modal-load-hist" style="display:none">
+  <div class="modal">
+    <h3>Carica preventivo</h3>
+    <p>Caricare questo preventivo dallo storico? Il preventivo corrente verr&agrave; perso.</p>
+    <div class="modal-btns">
+      <button class="btn btn-gray" onclick="closeModal('modal-load-hist')">Annulla</button>
+      <button class="btn btn-teal" onclick="doLoadHist()">Carica</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   DATA — STUDI Rev.08
+===================================================================== */
+const STUDI = [
+  {
+    id:'s1', nome:'Corona/Ponte su Moncone Naturale', iva:0, giorni:'5-7',
+    tipo:'std_el', mod:['Digitale','Analogica'],
+    mat:[
+      {nome:'Zirconia',d:70,a:90},
+      {nome:'PMMA',d:22,a:29},
+      {nome:'PMMA Rinforzato',d:39,a:45},
+      {nome:'Intarsio Disilicato',d:110,a:130},
+      {nome:'Cut Back Ceramica',d:100,a:120},
+      {nome:'Faccetta Disilicato',d:125,a:145},
+    ]
+  },
+  {
+    id:'s2', nome:'Corona/Ponte su Ti-Base', iva:0, giorni:'5-7',
+    tipo:'std_el', mod:['Digitale','Analogica'],
+    mat:[
+      {nome:'Zirconia',d:70,a:90},
+      {nome:'PMMA',d:22,a:29},
+      {nome:'PMMA Rinforzato',d:39,a:45},
+      {nome:'Cut Back Ceramica',d:100,a:120},
+    ]
+  },
+  {
+    id:'s3', nome:'Corona/Ponte Avvitato', iva:0, giorni:'5-7',
+    tipo:'std_el', mod:['Digitale','Analogica'],
+    mat:[{nome:'Titanio Fresato + Composito',d:80,a:100}]
+  },
+  {
+    id:'s4', nome:'Full Arch Avvitata Diretta', iva:0, giorni:'10-14',
+    tipo:'std_arcata', mod:['Digitale','Analogica'],
+    mat:[
+      {nome:'Barra Titanio + Composito',d:850,a:900},
+      {nome:'Barra Titanio + Zirconia',d:1150,a:1200},
+    ]
+  },
+  {id:'s5', nome:'Prova Jig', iva:22, giorni:'3-5', tipo:'prova_jig'},
+  {id:'s6', nome:'Chirurgia Guidata', iva:22, giorni:null, tipo:'chirurgia'},
+  {id:'s7', nome:'Chirurgia Guidata Zigomatica', iva:22, giorni:'7-10', tipo:'zigomatica'},
+  {id:'s8', nome:'Stampa 3D', iva:22, giorni:'2-3', tipo:'stampa3d'},
+];
+
+const LAB = [
+  {
+    id:'l1', nome:'Abutment Avvitato Diretto', iva:4, giorni:'5-7',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[{nome:'Titanio',o:45,a:65},{nome:'Cromo Cobalto',o:50,a:70}],
+    waxup:{analogico:10}
+  },
+  {
+    id:'l2', nome:'Corone/Ponti su Ti-Base', iva:4, giorni:'5-7',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[
+      {nome:'Zirconia',o:35,a:50},
+      {nome:'PMMA',o:10,a:25},
+      {nome:'PMMA Rinforzato',o:30,a:45},
+      {nome:'Resina 3D Jig',o:5,a:20},
+    ],
+    waxup:{analogico:10}
+  },
+  {
+    id:'l3', nome:'Barre e Ponti Avvitati', iva:4, giorni:'7-10', tipo:'barre',
+    mod:['Ottica','Analogico'],
+    prezzi:{
+      'Cromo Cobalto':{o:{2:130,'3-4':150,'5-8':300,'9-14':350},a:{2:165,'3-4':190,'5-8':365,'9-14':435}},
+      'Titanio Gr5':{o:{2:110,'3-4':130,'5-8':250,'9-14':300},a:{2:140,'3-4':165,'5-8':310,'9-14':380}}
+    },
+    waxup:{analog_24:20, analog_514:50}
+  },
+  {
+    id:'l4', nome:'Corone/Ponti su Monconi Naturali', iva:4, giorni:'5-7',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[
+      {nome:'Cromo Cobalto',o:20,a:35},
+      {nome:'Titanio',o:20,a:35},
+      {nome:'Zirconia',o:35,a:50},
+      {nome:'PMMA',o:10,a:25},
+      {nome:'PMMA Rinforzato',o:30,a:45},
+      {nome:'Disilicato',o:65,a:85},
+    ]
+  },
+  {
+    id:'l5', nome:'Laser Melting — Titanio', iva:4, giorni:'7-10',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[{nome:'Titanio',o:8,a:25}]
+  },
+  {
+    id:'l6', nome:'Abutment + Corona', iva:4, giorni:'5-7',
+    tipo:'lab_el', mod:['Ottica','Analogico'],
+    mat:[
+      {nome:'Titanio + Composito',o:65,a:75},
+      {nome:'Titanio + Zirconia',o:75,a:85},
+      {nome:'Titanio + PMMA',o:45,a:55},
+    ]
+  },
+  {
+    id:'l7', nome:'Barra + Sovrastruttura', iva:4, giorni:'7-10',
+    tipo:'lab_arcata', mod:['Ottica','Analogico'],
+    mat:[
+      {nome:'Titanio + Composito',o:600,a:700},
+      {nome:'Titanio + Zirconia',o:700,a:800},
+      {nome:'Titanio + PMMA',o:400,a:500},
+    ],
+    waxup:{ottica:5,analogico:50}
+  },
+  {id:'l8', nome:'Progettazione da Invio File', iva:22, giorni:'2-3', tipo:'prog_lab'},
+  {id:'l9', nome:'Stampa 3D', iva:22, giorni:'2-3', tipo:'stampa3d'},
+  {
+    id:'l10', nome:'Servizi', iva:22, giorni:'2-3', tipo:'servizi_lab',
+    voci:[
+      {nome:'Invio file progettazione provvisorio su chirurgia guidata', prezzo:16},
+      {nome:'Foro inclinato su avvitata diretta', prezzo:16},
+    ]
+  },
+];
+
+const STAMPA3D_VOCI = [
+  {nome:'Modello arcata',prezzo:22},
+  {nome:'Modello emiarcata',prezzo:12},
+  {nome:'Modello arcata + antagonista',prezzo:30},
+  {nome:'Modello emiarcata + antagonista',prezzo:22},
+  {nome:'Progettazione modello arcata',prezzo:16},
+  {nome:'DIMA senza boccole',prezzo:40},
+  {nome:'Biomodello + segmentazione',prezzo:200},
+];
+
+const DIMA_PREZZI = {1:90,2:100,3:125,4:150,5:190,6:190,7:190};
+
+/* =====================================================================
+   STATE — PREVENTIVO
+===================================================================== */
+const S = {
+  clientType: 'studi',
+  items: [],
+  editingId: null,
+  cliente: '',
+  paziente: '',
+  ship: {exchange:false, urgent:false},
+  quoteNum: Math.floor(Date.now()/1000),
+};
+let _uid = 1;
+
+/* =====================================================================
+   UTILS
+===================================================================== */
+function uid(){ return 'i'+(_uid++) }
+function eur(n){ return n.toFixed(2).replace('.',',') + '\u00a0\u20ac' }
+function getCats(){ return S.clientType==='studi'?STUDI:LAB }
+function getCat(id){ return getCats().find(c=>c.id===id) }
+function ivaCls(r){ return r===0?'iva0':r===4?'iva4':'iva22' }
+function ivaLbl(r){ return 'IVA '+r+'%' }
+function safeParse(v,d=0){ const n=parseFloat(v); return isNaN(n)?d:n }
+function safeInt(v,d=1){ const n=parseInt(v); return isNaN(n)?d:n }
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* =====================================================================
+   POPULATE CATEGORY SELECT
+===================================================================== */
+function populateCatSelect(){
+  const sel = document.getElementById('sel-cat');
+  sel.innerHTML = '<option value="">— Seleziona categoria —</option>';
+  getCats().forEach(c=>{
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.nome;
+    sel.appendChild(o);
+  });
+}
+
+/* =====================================================================
+   CLIENT TYPE
+===================================================================== */
+function setClient(type){
+  S.clientType = type;
+  document.getElementById('btn-studi').classList.toggle('on', type==='studi');
+  document.getElementById('btn-lab').classList.toggle('on', type==='lab');
+  populateCatSelect();
+  document.getElementById('sel-cat').value = '';
+  document.getElementById('dyn-form').innerHTML = '';
+  document.getElementById('price-prev').style.display='none';
+}
+
+/* =====================================================================
+   CATEGORY CHANGE → RENDER FORM
+===================================================================== */
+function onCatChange(){
+  const id = document.getElementById('sel-cat').value;
+  const cat = getCat(id);
+  const df = document.getElementById('dyn-form');
+  if(!cat){ df.innerHTML=''; document.getElementById('price-prev').style.display='none'; return; }
+  df.innerHTML = renderForm(cat);
+  bindFormEvents(cat);
+  updatePreview();
+}
+
+/* =====================================================================
+   FORM RENDERING
+===================================================================== */
+function renderForm(cat){
+  switch(cat.tipo){
+    case 'std_el': return renderStdEl(cat, false);
+    case 'std_arcata': return renderStdArcata(cat, false);
+    case 'lab_el': return renderLabEl(cat);
+    case 'lab_arcata': return renderLabArcata(cat);
+    case 'barre': return renderBarre(cat);
+    case 'prova_jig': return renderProvaJig(cat);
+    case 'chirurgia': return renderChirurgia(cat);
+    case 'zigomatica': return renderZigomatica(cat);
+    case 'stampa3d': return renderStampa3D(cat);
+    case 'prog_lab': return renderProgLab(cat);
+    case 'servizi_lab': return renderServiziLab(cat);
+    default: return '';
+  }
+}
+
+function modPills(mods, id='mod'){
+  return `<div class="fg"><label>Modalit&agrave;</label><div class="pills" id="pills-${id}">
+    ${mods.map((m,i)=>`<div class="pill${i===0?' on':''}" data-val="${m}" onclick="selectPill('pills-${id}',this)">${m}</div>`).join('')}
+  </div></div>`;
+}
+
+function matSelect(cat, onchange=''){
+  return `<div class="fg"><label>Materiale</label>
+    <select id="sel-mat" onchange="${onchange||'updatePreview()'}">
+      ${cat.mat.map(m=>`<option value="${m.nome}">${m.nome}</option>`).join('')}
+    </select></div>`;
+}
+
+function labMatSelect(cat){
+  return `<div class="fg"><label>Materiale</label>
+    <select id="sel-mat" onchange="updateLabMat()">
+      ${cat.mat.map(m=>`<option value="${m.nome}">${m.nome}</option>`).join('')}
+    </select></div>`;
+}
+
+function renderStdEl(cat){
+  return modPills(cat.mod) + matSelect(cat) +
+    `<div class="fg"><label>Numero elementi</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>`;
+}
+function renderStdArcata(cat){
+  return modPills(cat.mod) + matSelect(cat) +
+    `<div class="fg"><label>Numero arcate</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>`;
+}
+
+function renderLabEl(cat){
+  const hasWaxup = cat.waxup && cat.waxup.analogico;
+  return modPills(cat.mod,'mod') + labMatSelect(cat) +
+    `<div class="fg"><label>Numero elementi</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>` +
+    (hasWaxup ? `<div id="waxup-row" style="display:none">
+      <label class="chk-row"><input type="checkbox" id="chk-waxup" onchange="updatePreview()"> Wax-up fornito (sconto &minus;${cat.waxup.analogico}&euro;/el)</label>
+    </div>` : '');
+}
+function renderLabArcata(cat){
+  const hasWaxup = cat.waxup;
+  const waxDesc = hasWaxup ? `Ottica: &minus;${cat.waxup.ottica}&euro;/arcata | Analogico: &minus;${cat.waxup.analogico}&euro;/arcata` : '';
+  return modPills(cat.mod,'mod') + labMatSelect(cat) +
+    `<div class="fg"><label>Numero arcate</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>` +
+    (hasWaxup ? `<label class="chk-row"><input type="checkbox" id="chk-waxup" onchange="updatePreview()"> Wax-up fornito (${waxDesc})</label>` : '');
+}
+
+function renderBarre(cat){
+  const mats = Object.keys(cat.prezzi).map(m=>`<option value="${m}">${m}</option>`).join('');
+  return modPills(cat.mod,'mod') +
+    `<div class="fg"><label>Materiale</label><select id="sel-mat" onchange="updateBarreFascia()">${mats}</select></div>` +
+    `<div class="fg"><label>Numero elementi <small>(2&ndash;14)</small></label>
+      <input type="number" id="inp-el" min="2" max="14" value="2" onchange="updateBarreFascia()">
+      <div id="barre-fascia" class="note" style="margin-top:4px"></div>
+    </div>` +
+    `<div id="waxup-row-barre" style="display:none">
+      <label class="chk-row"><input type="checkbox" id="chk-waxup" onchange="updatePreview()"> Wax-up fornito</label>
+    </div>` +
+    `<div class="note-warn" style="display:block;margin-top:6px">* I prezzi analogico per le Barre sono stime &mdash; verificare con il listino ufficiale.</div>`;
+}
+
+function renderProvaJig(cat){
+  return modPills(cat.mod,'mod') +
+    `<div class="fg"><label>Numero elementi</label>
+      <select id="sel-pjig" onchange="updatePreview()">
+        <option value="1">1 elemento &mdash; 20,00 &euro;</option>
+        <option value="2-7">2&ndash;7 elementi &mdash; 60,00 &euro;</option>
+        <option value="8-12">8&ndash;12 elementi &mdash; 100,00 &euro;</option>
+        <option value="arcata">Arcata completa &mdash; Gratuita</option>
+      </select>
+    </div>`;
+}
+
+function renderChirurgia(cat){
+  return `<div class="fg"><label>Tipo lavorazione</label>
+    <select id="sel-chir" onchange="onChirSubChange()">
+      <option value="prog_only">Solo Progettazione (senza DIMA) &mdash; 90,00 &euro;</option>
+      <option value="prog_dima">Progettazione + DIMA</option>
+      <option value="el_ci">Elemento Provvisorio &mdash; Carico Immediato (30&euro;/arcata)</option>
+      <option value="el_ti">Elemento Provvisorio &mdash; Rinforzato Titanio (40&euro;/arcata)</option>
+      <option value="arc_ci">Arcata Provvisoria &mdash; Carico Immediato (350&euro;)</option>
+      <option value="arc_ti">Arcata Provvisoria &mdash; Rinforzata Titanio (490&euro;)</option>
+      <option value="assistenza">Assistenza in Studio (min. 200&euro;)</option>
+    </select>
+  </div>
+  <div id="chir-sub"></div>`;
+}
+
+function renderZigomatica(cat){
+  return `<div class="fg"><label>Tipo guida</label>
+    <select id="sel-zigo-guida" onchange="updatePreview()">
+      <option value="hybrid">Z-GO Guide Hybrid</option>
+      <option value="quad">Z-GO Guide Quad</option>
+    </select></div>
+  <div class="fg"><label>Dimensione</label>
+    <select id="sel-zigo-dim" onchange="updatePreview()">
+      <option value="emi">Emiarcata</option>
+      <option value="arcata">Arcata Completa</option>
+    </select></div>
+  <div class="fg"><label>Quantit&agrave;</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>`;
+}
+
+function renderStampa3D(cat){
+  const opts = STAMPA3D_VOCI.map((v,i)=>`<option value="${i}">${v.nome} &mdash; ${eur(v.prezzo)}</option>`).join('');
+  return `<div class="fg"><label>Voce</label><select id="sel-s3d" onchange="updatePreview()">${opts}</select></div>
+    <div class="fg"><label>Quantit&agrave;</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>`;
+}
+
+function renderProgLab(cat){
+  return `<div class="fg"><label>Tipo</label>
+    <select id="sel-prog" onchange="onProgLabChange()">
+      <option value="el">Per elemento &mdash; 10,00 &euro;/el</option>
+      <option value="full">Full Arch &mdash; 100,00 &euro;</option>
+    </select></div>
+    <div id="prog-el-row">
+      <div class="fg"><label>Numero elementi</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>
+    </div>`;
+}
+
+function renderServiziLab(cat){
+  const opts = cat.voci.map((v,i)=>`<option value="${i}">${v.nome} &mdash; ${eur(v.prezzo)}</option>`).join('');
+  return `<div class="fg"><label>Voce</label><select id="sel-srv" onchange="updatePreview()">${opts}</select></div>
+    <div class="fg"><label>Quantit&agrave;</label><input type="number" id="inp-el" min="1" value="1" onchange="updatePreview()"></div>`;
+}
+
+function bindFormEvents(cat){}
+
+/* =====================================================================
+   DYNAMIC SUB-FORM UPDATES
+===================================================================== */
+function selectPill(groupId, el){
+  document.querySelectorAll('#'+groupId+' .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  const catId = document.getElementById('sel-cat').value;
+  const cat = getCat(catId);
+  if(!cat) return;
+  if(cat.tipo==='lab_el'||cat.tipo==='lab_arcata'||cat.tipo==='barre'){
+    updateLabMat && updateLabMat();
+    updateBarreFascia && updateBarreFascia();
+  }
+  updatePreview();
+}
+
+function getPillVal(groupId){
+  const on = document.querySelector('#'+groupId+' .pill.on');
+  return on ? on.dataset.val : null;
+}
+
+function updateLabMat(){
+  const mod = getPillVal('pills-mod');
+  const wr = document.getElementById('waxup-row');
+  if(wr){
+    wr.style.display = (mod==='Analogico'||mod==='Analogica') ? 'block' : 'none';
+    if(wr.style.display==='none'){
+      const chk = document.getElementById('chk-waxup');
+      if(chk) chk.checked=false;
+    }
+  }
+  updatePreview();
+}
+
+function updateBarreFascia(){
+  const mod = getPillVal('pills-mod');
+  const wr = document.getElementById('waxup-row-barre');
+  if(wr) wr.style.display=(mod==='Analogico')?'block':'none';
+  const n = safeInt(document.getElementById('inp-el')?.value, 2);
+  const fascia = getBarreFascia(n);
+  const fd = document.getElementById('barre-fascia');
+  if(fd) fd.textContent = n<2||n>14 ? 'Numero non valido (2-14)' : 'Fascia: '+fascia;
+  updatePreview();
+}
+
+function getBarreFascia(n){
+  if(n===2) return '2 el.';
+  if(n>=3&&n<=4) return '3-4 el.';
+  if(n>=5&&n<=8) return '5-8 el.';
+  if(n>=9&&n<=14) return '9-14 el.';
+  return null;
+}
+
+function getBarreKey(n){
+  if(n===2) return 2;
+  if(n>=3&&n<=4) return '3-4';
+  if(n>=5&&n<=8) return '5-8';
+  if(n>=9&&n<=14) return '9-14';
+  return null;
+}
+
+function onChirSubChange(){
+  const sub = document.getElementById('sel-chir')?.value;
+  const div = document.getElementById('chir-sub');
+  if(!div) return;
+  switch(sub){
+    case 'prog_dima':
+      div.innerHTML=`<div class="row2">
+        <div class="fg"><label>N. impianti (1-7)</label><input type="number" id="inp-nimp" min="1" max="7" value="1" onchange="updatePreview()"></div>
+        <div class="fg"><label>N. boccole extra PAGA</label><input type="number" id="inp-bocc" min="0" value="0" onchange="updatePreview()"></div>
+      </div>`;
+      break;
+    case 'el_ci': case 'el_ti':
+      div.innerHTML=`<div class="fg"><label>Numero arcate (1-2)</label><input type="number" id="inp-el" min="1" max="2" value="1" onchange="updatePreview()"></div>`;
+      break;
+    case 'arc_ci': case 'arc_ti':
+      div.innerHTML=`<div class="fg"><label>Quantit&agrave;</label><input type="number" id="inp-el" min="1" max="2" value="1" onchange="updatePreview()"></div>`;
+      break;
+    case 'assistenza':
+      div.innerHTML=`<div class="fg"><label>Importo &euro; (min. 200)</label><input type="number" id="inp-assist" min="200" value="200" onchange="updatePreview()"></div>`;
+      break;
+    default:
+      div.innerHTML='';
+  }
+  updatePreview();
+}
+
+function onProgLabChange(){
+  const t = document.getElementById('sel-prog')?.value;
+  const row = document.getElementById('prog-el-row');
+  if(row) row.style.display=(t==='el')?'block':'none';
+  updatePreview();
+}
+
+/* =====================================================================
+   PRICE CALCULATION
+===================================================================== */
+function calcPrice(cat){
+  switch(cat.tipo){
+    case 'std_el': return calcStdEl(cat);
+    case 'std_arcata': return calcStdArcata(cat);
+    case 'lab_el': return calcLabEl(cat);
+    case 'lab_arcata': return calcLabArcata(cat);
+    case 'barre': return calcBarre(cat);
+    case 'prova_jig': return calcProvaJig(cat);
+    case 'chirurgia': return calcChirurgia(cat);
+    case 'zigomatica': return calcZigomatica(cat);
+    case 'stampa3d': return calcStampa3D(cat);
+    case 'prog_lab': return calcProgLab(cat);
+    case 'servizi_lab': return calcServiziLab(cat);
+    default: return {unit:0,qty:1,total:0,desc:'',valid:false};
+  }
+}
+
+function getModStudi(){
+  const mod = getPillVal('pills-mod');
+  return mod==='Digitale'?'d':'a';
+}
+function getModLab(){
+  const mod = getPillVal('pills-mod');
+  return mod==='Ottica'?'o':'a';
+}
+
+function calcStdEl(cat){
+  const mk = getModStudi();
+  const modName = getPillVal('pills-mod');
+  const matName = document.getElementById('sel-mat')?.value;
+  const mat = cat.mat.find(m=>m.nome===matName);
+  const el = safeInt(document.getElementById('inp-el')?.value,1);
+  if(!mat) return {total:0,valid:false};
+  const price = mat[mk];
+  if(price===null) return {total:0,valid:false,errMsg:`${mat.nome} non disponibile in modalità ${modName}`};
+  const total = price*el;
+  return {unit:price,qty:el,total,desc:`${cat.nome} — ${mat.nome} (${modName})`,valid:true,unitLabel:'€/el'};
+}
+function calcStdArcata(cat){
+  const mk = getModStudi();
+  const modName = getPillVal('pills-mod');
+  const matName = document.getElementById('sel-mat')?.value;
+  const mat = cat.mat.find(m=>m.nome===matName);
+  const el = safeInt(document.getElementById('inp-el')?.value,1);
+  if(!mat) return {total:0,valid:false};
+  const price = mat[mk];
+  const total = price*el;
+  return {unit:price,qty:el,total,desc:`${cat.nome} — ${mat.nome} (${modName})`,valid:true,unitLabel:'€/arcata'};
+}
+
+function calcLabEl(cat){
+  const mk = getModLab();
+  const modName = getPillVal('pills-mod');
+  const matName = document.getElementById('sel-mat')?.value;
+  const mat = cat.mat.find(m=>m.nome===matName);
+  const el = safeInt(document.getElementById('inp-el')?.value,1);
+  const waxup = document.getElementById('chk-waxup')?.checked && mk==='a';
+  if(!mat) return {total:0,valid:false};
+  const disc = (waxup && cat.waxup?.analogico) ? cat.waxup.analogico : 0;
+  const price = mat[mk]-disc;
+  const total = price*el;
+  let desc = `${cat.nome} — ${mat.nome} (${modName})`;
+  if(waxup) desc += ' [wax-up -'+disc+'€/el]';
+  return {unit:mat[mk],qty:el,total,desc,valid:true,unitLabel:'€/el',disc:waxup?disc*el:0};
+}
+function calcLabArcata(cat){
+  const mk = getModLab();
+  const modName = getPillVal('pills-mod');
+  const matName = document.getElementById('sel-mat')?.value;
+  const mat = cat.mat.find(m=>m.nome===matName);
+  const el = safeInt(document.getElementById('inp-el')?.value,1);
+  const waxup = document.getElementById('chk-waxup')?.checked;
+  if(!mat) return {total:0,valid:false};
+  const discUnit = waxup ? (mk==='o'?(cat.waxup?.ottica||0):(cat.waxup?.analogico||0)) : 0;
+  const price = mat[mk]-discUnit;
+  const total = price*el;
+  let desc = `${cat.nome} — ${mat.nome} (${modName})`;
+  if(waxup&&discUnit) desc += ` [wax-up -${discUnit}€/arcata]`;
+  return {unit:mat[mk],qty:el,total,desc,valid:true,unitLabel:'€/arcata',disc:waxup?discUnit*el:0};
+}
+
+function calcBarre(cat){
+  const mk = getModLab();
+  const modName = getPillVal('pills-mod');
+  const matName = document.getElementById('sel-mat')?.value;
+  const n = safeInt(document.getElementById('inp-el')?.value,2);
+  const waxup = document.getElementById('chk-waxup')?.checked && mk==='a';
+  if(n<2||n>14) return {total:0,valid:false,errMsg:'Numero elementi non valido (2-14)'};
+  const key = getBarreKey(n);
+  if(!key) return {total:0,valid:false};
+  const prezzi = cat.prezzi[matName];
+  if(!prezzi) return {total:0,valid:false};
+  const base = prezzi[mk][key];
+  const disc = waxup ? (n<=4?cat.waxup.analog_24:cat.waxup.analog_514) : 0;
+  const total = base - disc;
+  const fascia = getBarreFascia(n);
+  let desc = `${cat.nome} — ${matName} (${modName}, ${fascia})`;
+  if(waxup&&disc) desc += ` [wax-up -${disc}€]`;
+  return {unit:base,qty:1,total,desc,valid:true,unitLabel:'€/fascia',disc:waxup?disc:0};
+}
+
+function calcProvaJig(cat){
+  const sel = document.getElementById('sel-pjig')?.value;
+  const modName = getPillVal('pills-mod');
+  const MAP = {'1':20,'2-7':60,'8-12':100,'arcata':0};
+  const price = MAP[sel]||0;
+  const label = {'1':'1 el.','2-7':'2-7 el.','8-12':'8-12 el.','arcata':'Arcata completa'}[sel]||sel;
+  let desc = `${cat.nome} — ${label} (${modName})`;
+  if(sel==='arcata') desc += ' [GRATUITA]';
+  return {unit:price,qty:1,total:price,desc,valid:true,unitLabel:'€'};
+}
+
+function calcChirurgia(cat){
+  const sub = document.getElementById('sel-chir')?.value;
+  switch(sub){
+    case 'prog_only':
+      return {unit:90,qty:1,total:90,desc:'Chirurgia Guidata — Solo Progettazione (senza DIMA)',valid:true};
+    case 'prog_dima':{
+      const ni = Math.min(7,Math.max(1,safeInt(document.getElementById('inp-nimp')?.value,1)));
+      const nb = Math.max(0,safeInt(document.getElementById('inp-bocc')?.value,0));
+      const base = DIMA_PREZZI[ni]||90;
+      const total = base + nb*6;
+      return {unit:base,qty:1,total,desc:`Chirurgia Guidata — Progettazione + DIMA (${ni} imp.${nb>0?', '+nb+' bocc. extra':''})`,valid:true};
+    }
+    case 'el_ci':{
+      const a=safeInt(document.getElementById('inp-el')?.value,1);
+      return {unit:30,qty:a,total:30*a,desc:`Chirurgia Guidata — Elemento Provvisorio Carico Immediato (${a} arcata/e)`,valid:true,unitLabel:'€/arcata'};
+    }
+    case 'el_ti':{
+      const a=safeInt(document.getElementById('inp-el')?.value,1);
+      return {unit:40,qty:a,total:40*a,desc:`Chirurgia Guidata — Elemento Provvisorio Rinforzato Titanio (${a} arcata/e)`,valid:true,unitLabel:'€/arcata'};
+    }
+    case 'arc_ci':{
+      const q=safeInt(document.getElementById('inp-el')?.value,1);
+      return {unit:350,qty:q,total:350*q,desc:`Chirurgia Guidata — Arcata Provvisoria Carico Immediato`,valid:true};
+    }
+    case 'arc_ti':{
+      const q=safeInt(document.getElementById('inp-el')?.value,1);
+      return {unit:490,qty:q,total:490*q,desc:`Chirurgia Guidata — Arcata Provvisoria Rinforzata Titanio`,valid:true};
+    }
+    case 'assistenza':{
+      const amt = safeParse(document.getElementById('inp-assist')?.value,200);
+      if(amt<200) return {total:0,valid:false,errMsg:'Importo minimo assistenza: 200€'};
+      return {unit:amt,qty:1,total:amt,desc:'Chirurgia Guidata — Assistenza in Studio',valid:true};
+    }
+    default: return {total:0,valid:false};
+  }
+}
+
+function calcZigomatica(cat){
+  const guida = document.getElementById('sel-zigo-guida')?.value;
+  const dim = document.getElementById('sel-zigo-dim')?.value;
+  const qty = safeInt(document.getElementById('inp-el')?.value,1);
+  const MAP = {hybrid:{emi:600,arcata:890},quad:{emi:750,arcata:990}};
+  const price = MAP[guida]?.[dim]||600;
+  const desc = `Chirurgia Guidata Zigomatica — Z-GO ${guida==='hybrid'?'Hybrid':'Quad'} (${dim==='emi'?'Emiarcata':'Arcata Completa'})`;
+  return {unit:price,qty,total:price*qty,desc,valid:true};
+}
+
+function calcStampa3D(cat){
+  const idx = safeInt(document.getElementById('sel-s3d')?.value,0);
+  const voce = STAMPA3D_VOCI[idx];
+  const qty = safeInt(document.getElementById('inp-el')?.value,1);
+  if(!voce) return {total:0,valid:false};
+  return {unit:voce.prezzo,qty,total:voce.prezzo*qty,desc:`Stampa 3D — ${voce.nome}`,valid:true};
+}
+
+function calcProgLab(cat){
+  const tipo = document.getElementById('sel-prog')?.value;
+  if(tipo==='full'){
+    return {unit:100,qty:1,total:100,desc:'Progettazione da Invio File — Full Arch',valid:true};
+  } else {
+    const el = safeInt(document.getElementById('inp-el')?.value,1);
+    return {unit:10,qty:el,total:10*el,desc:`Progettazione da Invio File — Per elemento (${el} el.)`,valid:true,unitLabel:'€/el'};
+  }
+}
+
+function calcServiziLab(cat){
+  const idx = safeInt(document.getElementById('sel-srv')?.value,0);
+  const voce = cat.voci[idx];
+  const qty = safeInt(document.getElementById('inp-el')?.value,1);
+  if(!voce) return {total:0,valid:false};
+  return {unit:voce.prezzo,qty,total:voce.prezzo*qty,desc:`Servizi — ${voce.nome}`,valid:true};
+}
+
+/* =====================================================================
+   PRICE PREVIEW
+===================================================================== */
+function updatePreview(){
+  const id = document.getElementById('sel-cat').value;
+  const cat = getCat(id);
+  const pp = document.getElementById('price-prev');
+  if(!cat){ pp.style.display='none'; return; }
+  const r = calcPrice(cat);
+  pp.style.display='flex';
+  pp.classList.remove('err-prev');
+  if(!r.valid || r.errMsg){
+    pp.classList.add('err-prev');
+    document.getElementById('prev-amt').textContent = r.errMsg || '—';
+    document.getElementById('prev-iva').textContent = '';
+    return;
+  }
+  document.getElementById('prev-amt').textContent = eur(r.total);
+  document.getElementById('prev-iva').textContent = ivaLbl(cat.iva);
+}
+
+/* =====================================================================
+   ADD / UPDATE ITEM
+===================================================================== */
+function addOrUpdate(){
+  const id = document.getElementById('sel-cat').value;
+  const cat = getCat(id);
+  if(!cat){ alert('Seleziona una categoria.'); return; }
+  const r = calcPrice(cat);
+  if(!r.valid){ alert(r.errMsg||'Dati non validi. Controlla i campi.'); return; }
+
+  const item = {
+    id: S.editingId || uid(),
+    catId: cat.id,
+    desc: r.desc,
+    unit: r.unit,
+    qty: r.qty,
+    vatRate: cat.iva,
+    total: r.total,
+    giorni: cat.giorni,
+    disc: r.disc||0,
+  };
+
+  if(S.editingId){
+    const idx = S.items.findIndex(i=>i.id===S.editingId);
+    if(idx>=0) S.items[idx]=item;
+    S.editingId=null;
+    document.getElementById('btn-add').textContent='+ Aggiungi al preventivo';
+    document.getElementById('btn-cancel').style.display='none';
+  } else {
+    S.items.push(item);
+    if(S.items.length===1) autoSaveHistory();
+  }
+
+  renderQuote();
+  renderTotals();
+  document.getElementById('sel-cat').value='';
+  document.getElementById('dyn-form').innerHTML='';
+  document.getElementById('price-prev').style.display='none';
+}
+
+function cancelEdit(){
+  S.editingId=null;
+  document.getElementById('btn-add').textContent='+ Aggiungi al preventivo';
+  document.getElementById('btn-cancel').style.display='none';
+  document.getElementById('sel-cat').value='';
+  document.getElementById('dyn-form').innerHTML='';
+  document.getElementById('price-prev').style.display='none';
+}
+
+function removeItem(id){
+  S.items = S.items.filter(i=>i.id!==id);
+  renderQuote();
+  renderTotals();
+}
+
+function editItem(id){
+  const item = S.items.find(i=>i.id===id);
+  if(!item) return;
+  S.editingId = id;
+  document.getElementById('sel-cat').value = item.catId;
+  onCatChange();
+  document.getElementById('btn-add').textContent='✓ Aggiorna voce';
+  document.getElementById('btn-cancel').style.display='inline-flex';
+  document.querySelector('.left-panel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* =====================================================================
+   RENDER QUOTE TABLE
+===================================================================== */
+function renderQuote(){
+  const body = document.getElementById('quote-body');
+  if(!S.items.length){
+    body.innerHTML=`<div class="empty">
+      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/>
+      </svg>
+      <p>Nessuna voce aggiunta.<br>Seleziona una categoria nel pannello a sinistra.</p>
+    </div>`;
+    document.getElementById('delivery-badge').innerHTML='';
+    updateStickyBar();
+    return;
+  }
+
+  const itemsWithDays = S.items.filter(i=>i.giorni);
+  if(itemsWithDays.length){
+    const parseRange = s=>{ const p=s.split('-'); return parseInt(p[p.length-1]); };
+    const maxDays = Math.max(...itemsWithDays.map(i=>parseRange(i.giorni)));
+    const minDays = Math.min(...itemsWithDays.map(i=>{ const p=i.giorni.split('-'); return parseInt(p[0]); }));
+    document.getElementById('delivery-badge').innerHTML=
+      `<span class="delivery-badge">&#9200; Consegna stimata: ${minDays}&ndash;${maxDays} giorni lavorativi</span>`;
+  } else {
+    document.getElementById('delivery-badge').innerHTML='';
+  }
+
+  const rows = S.items.map((item,idx)=>{
+    const ivaCl = ivaCls(item.vatRate);
+    const ivaLb = ivaLbl(item.vatRate);
+    return `<tr>
+      <td style="color:var(--g500);font-size:12px;width:28px">${idx+1}</td>
+      <td>
+        <div class="qt-desc">${escHtml(item.desc)}</div>
+        ${item.disc>0?`<div class="qt-sub">Sconto wax-up: &minus;${eur(item.disc)}</div>`:''}
+      </td>
+      <td class="num-col">${item.qty}</td>
+      <td class="num-col">${eur(item.unit)}</td>
+      <td class="num-col"><span class="ivab ${ivaCl}">${ivaLb}</span></td>
+      <td class="num-col"><strong>${eur(item.total)}</strong></td>
+      <td class="act-col no-print">
+        <button class="btn btn-gray btn-sm" onclick="editItem('${item.id}')" title="Modifica">&#9998;</button>
+        <button class="btn btn-red btn-sm" onclick="removeItem('${item.id}')" title="Elimina" style="margin-left:4px">&#215;</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  body.innerHTML=`<div class="qt-wrap"><table class="qt">
+    <thead><tr>
+      <th>#</th><th>Descrizione</th><th class="num-col">Qtà/El.</th>
+      <th class="num-col">P. Unit.</th><th class="num-col">IVA</th>
+      <th class="num-col">Totale</th><th class="no-print"></th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+  updateStickyBar();
+}
+
+/* =====================================================================
+   RENDER TOTALS
+===================================================================== */
+function renderTotals(){
+  const imp0  = S.items.filter(i=>i.vatRate===0).reduce((s,i)=>s+i.total,0);
+  const imp4  = S.items.filter(i=>i.vatRate===4).reduce((s,i)=>s+i.total,0);
+  const imp22 = S.items.filter(i=>i.vatRate===22).reduce((s,i)=>s+i.total,0);
+  const totImp = imp0+imp4+imp22;
+  const iva4  = imp4*0.04;
+  const iva22 = imp22*0.22;
+
+  const shipAuto = totImp>0 && totImp<100 ? 10 : 0;
+  const shipEx   = S.ship.exchange ? 10 : 0;
+  const shipUrg  = S.ship.urgent  ? 35 : 0;
+  const totShip  = shipAuto+shipEx+shipUrg;
+
+  const grand = totImp+iva4+iva22+totShip;
+
+  let html = '';
+  if(imp0>0)  html+=`<div class="tot-row dim"><span>Imponibile 0% (Disp. Medici)</span><span class="tot-val">${eur(imp0)}</span></div>`;
+  if(imp4>0)  html+=`<div class="tot-row dim"><span>Imponibile 4% (Lab)</span><span class="tot-val">${eur(imp4)}</span></div>`;
+  if(imp22>0) html+=`<div class="tot-row dim"><span>Imponibile 22%</span><span class="tot-val">${eur(imp22)}</span></div>`;
+
+  if((imp0+imp4+imp22)>0){
+    html+=`<hr class="tot-sep">`;
+    if(iva4>0)  html+=`<div class="tot-row iva"><span>IVA 4%</span><span class="tot-val">${eur(iva4)}</span></div>`;
+    if(iva22>0) html+=`<div class="tot-row iva"><span>IVA 22%</span><span class="tot-val">${eur(iva22)}</span></div>`;
+    html+=`<hr class="tot-sep">`;
+    html+=`<div class="tot-row ship"><span>Spedizione</span><span class="tot-val">${shipAuto>0?eur(shipAuto):'Gratuita'}</span></div>`;
+    if(shipEx>0) html+=`<div class="tot-row ship"><span>Ritiro / Exchange</span><span class="tot-val">${eur(shipEx)}</span></div>`;
+    if(shipUrg>0) html+=`<div class="tot-row ship"><span>Urgente</span><span class="tot-val">${eur(shipUrg)}</span></div>`;
+    html+=`<hr class="tot-sep2">`;
+    html+=`<div class="tot-row grand"><span>TOTALE FINALE</span><span class="tot-val">${eur(grand)}</span></div>`;
+  }
+
+  if(!S.items.length){
+    html='<div style="color:var(--g500);font-size:13px;text-align:center;padding:20px 0">Aggiungi voci al preventivo per vedere il riepilogo.</div>';
+  }
+
+  document.getElementById('totals-body').innerHTML=html;
+
+  document.getElementById('ship-auto-msg').textContent =
+    totImp===0 ? '' :
+    totImp<100 ? `Spedizione automatica: +10,00 € (imponibile < 100 €)` :
+    `Spedizione automatica: Gratuita (imponibile ≥ 100 €)`;
+
+  document.getElementById('pr-cliente').textContent = S.cliente||'—';
+  document.getElementById('pr-paziente').textContent = S.paziente||'—';
+  document.getElementById('pr-data').textContent = new Date().toLocaleDateString('it-IT');
+  document.getElementById('pr-num').textContent = S.quoteNum;
+}
+
+/* =====================================================================
+   MODAL HELPERS
+===================================================================== */
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+function confirmReset(){ openModal('modal-reset'); }
+function doReset(){
+  S.items=[];S.editingId=null;S.cliente='';S.paziente='';
+  S.ship.exchange=false;S.ship.urgent=false;
+  document.getElementById('inp-cliente').value='';
+  document.getElementById('inp-paziente').value='';
+  document.getElementById('chk-exchange').checked=false;
+  document.getElementById('chk-urgent').checked=false;
+  document.getElementById('sel-cat').value='';
+  document.getElementById('dyn-form').innerHTML='';
+  document.getElementById('price-prev').style.display='none';
+  document.getElementById('btn-cancel').style.display='none';
+  document.getElementById('btn-add').textContent='+ Aggiungi al preventivo';
+  const ab=document.getElementById('acc-body-dati');
+  const abtn=document.getElementById('acc-btn-dati');
+  if(ab){ ab.style.display='none'; }
+  if(abtn){ abtn.classList.remove('open'); }
+  S.quoteNum=Math.floor(Date.now()/1000);
+  renderQuote();renderTotals();updateStickyBar();
+  closeModal('modal-reset');
+}
+
+/* =====================================================================
+   EXPORT PDF PREVENTIVO (jsPDF)
+===================================================================== */
+function handlePrint(){
+  if(!S.items.length){ alert('Aggiungi almeno una voce al preventivo prima di esportare.'); return; }
+  if(!window.jspdf){ alert('Libreria jsPDF non caricata. Verifica la connessione.'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'p', unit:'mm', format:'a4' });
+  const W=210, H=297, ML=15, MR=15;
+  const cW = W-ML-MR;
+  let y = ML;
+
+  const TEAL=[13,148,136], DARK=[17,24,39], GRAY=[107,114,128], LGRAY=[200,200,200], LIGHT=[243,244,246];
+
+  function sf(style,size){ doc.setFont('helvetica',style); doc.setFontSize(size); }
+  function tc(rgb){ doc.setTextColor(rgb[0],rgb[1],rgb[2]); }
+  function fill(fx,fy,fw,fh,c){ doc.setFillColor(c[0],c[1],c[2]); doc.rect(fx,fy,fw,fh,'F'); }
+  function hline(fy,c){ c=c||LGRAY; doc.setDrawColor(c[0],c[1],c[2]); doc.line(ML,fy,W-MR,fy); }
+  function newPageIfNeeded(need){
+    if(y+need>H-18){ doc.addPage(); y=ML; }
+  }
+
+  fill(ML,y,cW,22,DARK);
+  fill(ML+3,y+4,14,14,TEAL);
+  sf('bold',11); doc.setTextColor(255,255,255); doc.text('JD',ML+10,y+13,{align:'center'});
+  sf('bold',14); doc.text('JD Milling Center',ML+22,y+11);
+  sf('normal',7); doc.setTextColor(204,251,241); doc.text('PREVENTIVATORE LAVORAZIONI',ML+22,y+17);
+  y+=26;
+
+  sf('normal',9); tc(GRAY);
+  doc.text('Data: '+new Date().toLocaleDateString('it-IT'), ML, y);
+  doc.text('Preventivo n\u00b0: '+S.quoteNum, W-MR, y, {align:'right'});
+  y+=5;
+  sf('normal',9); tc(DARK);
+  if(S.cliente){ sf('bold',9); doc.text('Cliente: ',ML,y); sf('normal',9); doc.text(S.cliente,ML+20,y); y+=5; }
+  if(S.paziente){ sf('bold',9); doc.text('Paziente/Note: ',ML,y); sf('normal',9); doc.text(S.paziente,ML+34,y); y+=5; }
+  sf('normal',9); tc(TEAL);
+  doc.text(S.clientType==='studi'?'Listino Studi Odontoiatrici \u2014 Rev.08':'Listino Laboratori Odontotecnici \u2014 Rev.03',ML,y);
+  y+=6; hline(y,DARK); y+=4;
+
+  fill(ML,y,cW,7,LIGHT);
+  sf('bold',8); tc(GRAY);
+  const C={desc:{x:ML+2,w:82},qty:{x:ML+84,w:14},unit:{x:ML+98,w:26},iva:{x:ML+124,w:16},tot:{x:ML+140,w:cW-142}};
+  doc.text('Descrizione',C.desc.x,y+5);
+  doc.text('Qt\u00e0/El.',C.qty.x+C.qty.w,y+5,{align:'right'});
+  doc.text('P. Unitario',C.unit.x+C.unit.w,y+5,{align:'right'});
+  doc.text('IVA',C.iva.x+C.iva.w/2,y+5,{align:'center'});
+  doc.text('Totale',C.tot.x+C.tot.w,y+5,{align:'right'});
+  y+=8;
+
+  S.items.forEach((item,i)=>{
+    newPageIfNeeded(10);
+    if(i%2===0) fill(ML,y,cW,8,[249,250,251]);
+    sf('normal',8); tc(DARK);
+    const rawDesc = item.desc;
+    const lines = doc.splitTextToSize(rawDesc, C.desc.w-2);
+    const rh = Math.max(8, lines.length*4.5+2);
+    newPageIfNeeded(rh);
+    if(i%2===0) fill(ML,y,cW,rh,[249,250,251]);
+    doc.text(lines, C.desc.x, y+5);
+    if(item.disc>0){ sf('italic',7); tc(GRAY); doc.text('Sconto wax-up: -'+eur(item.disc),C.desc.x,y+rh-1.5); }
+    sf('normal',8); tc(DARK);
+    doc.text(String(item.qty), C.qty.x+C.qty.w, y+5, {align:'right'});
+    doc.text(eur(item.unit), C.unit.x+C.unit.w, y+5, {align:'right'});
+    const ivaC=item.vatRate===0?[22,101,52]:item.vatRate===4?[30,64,175]:[146,64,14];
+    tc(ivaC); doc.text('IVA '+item.vatRate+'%',C.iva.x+C.iva.w/2,y+5,{align:'center'});
+    sf('bold',8); tc(DARK); doc.text(eur(item.total),C.tot.x+C.tot.w,y+5,{align:'right'});
+    y+=rh;
+  });
+
+  newPageIfNeeded(10); hline(y,DARK); y+=5;
+
+  const imp0 =S.items.filter(i=>i.vatRate===0).reduce((s,i)=>s+i.total,0);
+  const imp4 =S.items.filter(i=>i.vatRate===4).reduce((s,i)=>s+i.total,0);
+  const imp22=S.items.filter(i=>i.vatRate===22).reduce((s,i)=>s+i.total,0);
+  const totImp=imp0+imp4+imp22;
+  const iva4=imp4*0.04, iva22=imp22*0.22;
+  const shipAuto=totImp>0&&totImp<100?10:0;
+  const shipEx=S.ship.exchange?10:0, shipUrg=S.ship.urgent?35:0;
+  const grand=totImp+iva4+iva22+shipAuto+shipEx+shipUrg;
+  const TX=ML+cW*0.55;
+
+  function trow(lbl,val,bold){
+    newPageIfNeeded(7);
+    sf(bold?'bold':'normal', bold?10:9);
+    tc(bold?DARK:GRAY);
+    doc.text(lbl,TX,y); doc.text(val,W-MR,y,{align:'right'});
+    y+=bold?7:5;
+  }
+  if(imp0>0)  trow('Imponibile 0% (Disp. Medici)',eur(imp0));
+  if(imp4>0)  trow('Imponibile 4% (Lab)',eur(imp4));
+  if(imp22>0) trow('Imponibile 22%',eur(imp22));
+  if(iva4>0||iva22>0){ newPageIfNeeded(4); hline(y); y+=4; }
+  if(iva4>0)  trow('IVA 4%',eur(iva4));
+  if(iva22>0) trow('IVA 22%',eur(iva22));
+  newPageIfNeeded(4); hline(y); y+=4;
+  trow('Spedizione', shipAuto>0?eur(shipAuto):'Gratuita');
+  if(shipEx>0)  trow('Ritiro / Exchange',eur(shipEx));
+  if(shipUrg>0) trow('Urgente',eur(shipUrg));
+  newPageIfNeeded(10); hline(y,DARK); y+=4;
+  trow('TOTALE FINALE',eur(grand),true);
+
+  const discY=H-12;
+  hline(discY); sf('italic',7); tc(GRAY);
+  doc.text('La componentistica protesica \u00e8 esclusa dai prezzi indicati \u2014 Prezzi IVA esclusa salvo diversa indicazione.',W/2,discY+5,{align:'center'});
+
+  doc.save('Preventivo_JD_'+S.quoteNum+'.pdf');
+}
+
+/* =====================================================================
+   HISTORY
+===================================================================== */
+const LS_KEY = 'jd_prev_history';
+
+function autoSaveHistory(){
+  const hist = loadHistory();
+  const snap = {
+    id: S.quoteNum,
+    date: new Date().toLocaleDateString('it-IT'),
+    clientType: S.clientType,
+    cliente: S.cliente,
+    paziente: S.paziente,
+    items: JSON.parse(JSON.stringify(S.items)),
+    ship: {...S.ship},
+  };
+  hist.unshift(snap);
+  if(hist.length>10) hist.length=10;
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(hist)); }catch(e){}
+}
+
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch(e){ return []; }
+}
+
+let _pendingLoad = null;
+function showHistory(){
+  const hist = loadHistory();
+  const list = document.getElementById('hist-list');
+  if(!hist.length){
+    list.innerHTML='<div class="hist-empty">Nessun preventivo in storico.</div>';
+  } else {
+    list.innerHTML = hist.map((h,i)=>{
+      const imp = h.items.reduce((s,it)=>s+it.total,0);
+      return `<div class="hist-item" onclick="requestLoadHist(${i})">
+        <div class="hist-item-t">${escHtml(h.cliente||'(senza cliente)')} &mdash; ${h.date}</div>
+        <div class="hist-item-s">${h.clientType==='studi'?'Studio':'Laboratorio'} &mdash; ${h.items.length} voce/i &mdash; Totale imponibile: ${eur(imp)}</div>
+      </div>`;
+    }).join('');
+  }
+  openModal('modal-history');
+}
+
+function requestLoadHist(idx){
+  _pendingLoad = idx;
+  closeModal('modal-history');
+  if(S.items.length){
+    openModal('modal-load-hist');
+  } else {
+    doLoadHist();
+  }
+}
+
+function doLoadHist(){
+  const hist = loadHistory();
+  const h = hist[_pendingLoad];
+  if(!h){ closeModal('modal-load-hist'); return; }
+  S.clientType = h.clientType;
+  S.cliente = h.cliente||'';
+  S.paziente = h.paziente||'';
+  S.items = h.items||[];
+  S.ship = h.ship||{exchange:false,urgent:false};
+  S.quoteNum = h.id;
+  document.getElementById('inp-cliente').value = S.cliente;
+  document.getElementById('inp-paziente').value = S.paziente;
+  document.getElementById('chk-exchange').checked = S.ship.exchange;
+  document.getElementById('chk-urgent').checked = S.ship.urgent;
+  document.getElementById('btn-studi').classList.toggle('on', S.clientType==='studi');
+  document.getElementById('btn-lab').classList.toggle('on', S.clientType==='lab');
+  populateCatSelect();
+  document.getElementById('sel-cat').value='';
+  document.getElementById('dyn-form').innerHTML='';
+  document.getElementById('price-prev').style.display='none';
+  renderQuote();renderTotals();updateStickyBar();
+  closeModal('modal-load-hist');
+  _pendingLoad=null;
+}
+
+/* =====================================================================
+   ACCORDION
+===================================================================== */
+function toggleAccordion(btnId, bodyId){
+  const btn  = document.getElementById(btnId);
+  const body = document.getElementById(bodyId);
+  if(!btn||!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  btn.classList.toggle('open', !isOpen);
+}
+
+/* =====================================================================
+   STICKY BAR — PREVENTIVO
+===================================================================== */
+function updateStickyBar(){
+  const bar  = document.getElementById('sticky-pdf');
+  const info = document.getElementById('sticky-pdf-info');
+  const btn  = document.getElementById('sticky-pdf-btn');
+  if(!bar) return;
+  const n = S.items.length;
+  if(n === 0){
+    bar.classList.remove('visible');
+    document.body.classList.remove('has-sticky');
+  } else {
+    const imp = S.items.reduce((s,i)=>s+i.total,0);
+    info.innerHTML = `<strong>${n} voce${n>1?'':''}${n>1?' aggiunte':' aggiunta'}</strong>Imponibile: ${eur(imp)}`;
+    if(btn){ btn.onclick = handlePrint; btn.innerHTML = '&#9113;&nbsp; Esporta PDF'; }
+    bar.classList.add('visible');
+    document.body.classList.add('has-sticky');
+  }
+}
+
+/* =====================================================================
+   TAB SWITCHING
+===================================================================== */
+function switchTab(t){
+  document.getElementById('view-prev').style.display = t==='prev' ? '' : 'none';
+  document.getElementById('view-pkg').style.display  = t==='pkg'  ? '' : 'none';
+  document.getElementById('tab-prev').classList.toggle('active', t==='prev');
+  document.getElementById('tab-pkg').classList.toggle('active', t==='pkg');
+  if(t==='prev') updateStickyBar(); else updateStickyPkg();
+}
+
+/* =====================================================================
+   PACCHETTI & OFFERTE — STATE
+===================================================================== */
+const PKG_LS = 'jd_pkg_history';
+
+const P = {
+  soglia: 20,
+  pkg: {
+    id: null,
+    nome: '',
+    cliente: '',
+    validita: '',
+    righe: []
+  },
+  pkgView: 'edit'
+};
+
+/* =====================================================================
+   PACCHETTI — CALCOLI
+===================================================================== */
+function rigaSconto(r){ return r.listino>0 ? (1 - r.offerta/r.listino)*100 : 0; }
+
+function rigaSemaforoClass(r){
+  const disc = rigaSconto(r);
+  if(disc < 0) return 'sf-green';
+  if(disc <= P.soglia - 5) return 'sf-green';
+  if(disc <= P.soglia) return 'sf-yellow';
+  return 'sf-red';
+}
+
+function rigaPrezzoMin(r){ return r.listino * (1 - P.soglia/100); }
+
+function pkgSummary(){
+  const rs = P.pkg.righe;
+  const totOff = rs.reduce((s,r)=>s+r.offerta*r.volume, 0);
+  const totList = rs.reduce((s,r)=>s+r.listino*r.volume, 0);
+  const scontoMedio = rs.length ? rs.reduce((s,r)=>s+rigaSconto(r),0)/rs.length : 0;
+  const valoreTavolo = (totList - totOff) * 12;
+  return { totMensile:totOff, totAnnuo:totOff*12, totListMensile:totList, totListAnnuo:totList*12, scontoMedio, valoreTavolo };
+}
+
+/* =====================================================================
+   PACCHETTI — STICKY BAR
+===================================================================== */
+function updateStickyPkg(){
+  const bar  = document.getElementById('sticky-pdf');
+  const info = document.getElementById('sticky-pdf-info');
+  const btn  = document.getElementById('sticky-pdf-btn');
+  if(!bar) return;
+  const n = P.pkg.righe.length;
+  if(n===0){ bar.classList.remove('visible'); document.body.classList.remove('has-sticky'); return; }
+  const s = pkgSummary();
+  const label = n===1 ? '1 riga nel pacchetto' : `${n} righe nel pacchetto`;
+  info.innerHTML = `<strong>${label}</strong>Mensile: ${eur(s.totMensile)}`;
+  if(btn){ btn.onclick = exportPkgPdf; btn.innerHTML = '&#9113;&nbsp; Esporta Offerta PDF'; }
+  bar.classList.add('visible');
+  document.body.classList.add('has-sticky');
+}
+
+/* =====================================================================
+   PACCHETTI — SWITCH VIEW INTERNA
+===================================================================== */
+function pkgSwitchView(v){
+  P.pkgView = v;
+  document.getElementById('pkg-edit-view').style.display = v==='edit'?'':'none';
+  document.getElementById('pkg-hist-view').style.display = v==='history'?'':'none';
+  document.getElementById('pkg-tab-edit').className = v==='edit'?'btn btn-teal':'btn btn-gray';
+  document.getElementById('pkg-tab-hist').className = v==='history'?'btn btn-teal':'btn btn-gray';
+  if(v==='history') renderPkgHistory();
+}
+
+/* =====================================================================
+   PACCHETTI — HELPER: categorie selezionabili per il form aggiungi riga
+===================================================================== */
+function pkgGetCatsForType(ct){
+  return ct==='studi' ? STUDI : LAB;
+}
+
+// Dato l'id categoria e il tipo client, ritorna tutte le opzioni di listino
+// come array di { label, prezzo } per categorie auto-prezzate
+// Per cat manuali ritorna null (il prezzo va inserito manualmente)
+function pkgCatHasAutoPrice(cat){
+  return ['std_el','std_arcata','lab_el','lab_arcata'].includes(cat.tipo);
+}
+
+// Ritorna se la categoria richiede selezione modalità
+function pkgCatHasMod(cat){
+  return cat.mod && cat.mod.length > 0 &&
+    ['std_el','std_arcata','lab_el','lab_arcata','barre'].includes(cat.tipo);
+}
+
+// Dato una categoria std_el/lab_el/std_arcata/lab_arcata + modalità + materiale => prezzo
+function pkgCalcListino(cat, modVal, matNome){
+  if(cat.tipo==='std_el'||cat.tipo==='std_arcata'){
+    const mk = modVal==='Digitale'?'d':'a';
+    const mat = cat.mat.find(m=>m.nome===matNome);
+    return mat ? (mat[mk]||0) : 0;
+  }
+  if(cat.tipo==='lab_el'||cat.tipo==='lab_arcata'){
+    const mk = modVal==='Ottica'?'o':'a';
+    const mat = cat.mat.find(m=>m.nome===matNome);
+    return mat ? (mat[mk]||0) : 0;
+  }
+  return 0;
+}
+
+/* =====================================================================
+   PACCHETTI — RENDER FORM AGGIUNGI RIGA (inline nel renderPkgEdit)
+===================================================================== */
+function pkgRenderAddForm(){
+  // Stato del form aggiungi riga (leggere da elementi DOM con id pkg-form-*)
+  const ct = document.getElementById('pkg-form-type')?.value || 'studi';
+  const cats = pkgGetCatsForType(ct);
+
+  const catOpts = cats.map(c=>`<option value="${c.id}">${escHtml(c.nome)}</option>`).join('');
+
+  // Costruisci il form html
+  return `
+  <div class="card">
+    <div class="card-hd"><h3>Aggiungi riga offerta</h3></div>
+    <div class="card-bd">
+      <div class="row2">
+        <div class="fg">
+          <label>Listino</label>
+          <select id="pkg-form-type" onchange="pkgOnTypeChange()">
+            <option value="studi"${ct==='studi'?' selected':''}>Studi Odontoiatrici</option>
+            <option value="lab"${ct==='lab'?' selected':''}>Laboratori Odontotecnici</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Categoria</label>
+          <select id="pkg-form-cat" onchange="pkgOnCatChange()">
+            <option value="">— Seleziona —</option>
+            ${catOpts}
+          </select>
+        </div>
+      </div>
+      <div id="pkg-form-dyn"></div>
+      <div class="row2" style="margin-top:4px">
+        <div class="fg">
+          <label>Prezzo listino unitario (€)</label>
+          <input type="number" id="pkg-form-listino" min="0" step="0.01" placeholder="0,00" oninput="pkgOnListinoChange()">
+        </div>
+        <div class="fg">
+          <label>Volume/mese (pz)</label>
+          <input type="number" id="pkg-form-volume" min="1" value="1" step="1">
+        </div>
+      </div>
+      <div class="fg">
+        <label>Prezzo offerta unitario (€)</label>
+        <input type="number" id="pkg-form-offerta" min="0" step="0.01" placeholder="0,00">
+      </div>
+      <button class="btn btn-teal btn-full" onclick="pkgAddRiga()">+ Aggiungi riga</button>
+    </div>
+  </div>`;
+}
+
+/* =====================================================================
+   PACCHETTI — EVENT HANDLERS FORM
+===================================================================== */
+function pkgOnTypeChange(){
+  // re-renderizza solo la parte dyn dopo aver cambiato il tipo
+  // per semplicità ri-renderizza tutto il form
+  renderPkgEdit();
+  // ripristina il focus sulla select tipo dopo il re-render
+  // (non strettamente necessario)
+}
+
+function pkgOnCatChange(){
+  const ct = document.getElementById('pkg-form-type')?.value || 'studi';
+  const catId = document.getElementById('pkg-form-cat')?.value;
+  const cats = pkgGetCatsForType(ct);
+  const cat = cats.find(c=>c.id===catId);
+  const dyn = document.getElementById('pkg-form-dyn');
+  const listinoEl = document.getElementById('pkg-form-listino');
+  const offertaEl = document.getElementById('pkg-form-offerta');
+  if(!cat||!dyn) return;
+
+  let dynHtml = '';
+
+  if(pkgCatHasMod(cat)){
+    const modsHtml = cat.mod.map((m,i)=>
+      `<div class="pill${i===0?' on':''}" data-val="${m}" onclick="pkgSelectPill(this);pkgAutoPrice()">${m}</div>`
+    ).join('');
+    dynHtml += `<div class="fg"><label>Modalit&agrave;</label><div class="pills" id="pkg-pills-mod">${modsHtml}</div></div>`;
+  }
+
+  if(pkgCatHasAutoPrice(cat) && cat.mat && cat.mat.length){
+    const matOpts = cat.mat.map(m=>`<option value="${m.nome}">${escHtml(m.nome)}</option>`).join('');
+    dynHtml += `<div class="fg"><label>Materiale</label>
+      <select id="pkg-form-mat" onchange="pkgAutoPrice()">${matOpts}</select></div>`;
+  }
+
+  dyn.innerHTML = dynHtml;
+
+  // auto-calcola prezzo se possibile
+  pkgAutoPrice();
+}
+
+function pkgSelectPill(el){
+  const group = el.closest('.pills');
+  if(!group) return;
+  group.querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function pkgAutoPrice(){
+  const ct = document.getElementById('pkg-form-type')?.value || 'studi';
+  const catId = document.getElementById('pkg-form-cat')?.value;
+  const cats = pkgGetCatsForType(ct);
+  const cat = cats.find(c=>c.id===catId);
+  if(!cat) return;
+
+  const listinoEl = document.getElementById('pkg-form-listino');
+  const offertaEl = document.getElementById('pkg-form-offerta');
+
+  if(pkgCatHasAutoPrice(cat)){
+    const modEl = document.querySelector('#pkg-pills-mod .pill.on');
+    const modVal = modEl ? modEl.dataset.val : (cat.mod ? cat.mod[0] : '');
+    const matEl = document.getElementById('pkg-form-mat');
+    const matNome = matEl ? matEl.value : (cat.mat ? cat.mat[0].nome : '');
+    const prezzo = pkgCalcListino(cat, modVal, matNome);
+    if(listinoEl){ listinoEl.value = prezzo.toFixed(2); listinoEl.readOnly = true; }
+    if(offertaEl && (!offertaEl.value || offertaEl.value==='0.00')){ offertaEl.value = prezzo.toFixed(2); }
+    if(offertaEl && listinoEl && listinoEl.value){ /* keep user-edited offerta */ }
+  } else {
+    if(listinoEl){ listinoEl.readOnly = false; }
+  }
+}
+
+function pkgOnListinoChange(){
+  const listinoEl = document.getElementById('pkg-form-listino');
+  const offertaEl = document.getElementById('pkg-form-offerta');
+  if(listinoEl && offertaEl && !offertaEl.dataset.userEdited){
+    offertaEl.value = listinoEl.value;
+  }
+}
+
+/* =====================================================================
+   PACCHETTI — AGGIUNGI RIGA
+===================================================================== */
+function pkgAddRiga(){
+  const ct = document.getElementById('pkg-form-type')?.value || 'studi';
+  const catId = document.getElementById('pkg-form-cat')?.value;
+  const cats = pkgGetCatsForType(ct);
+  const cat = cats.find(c=>c.id===catId);
+
+  if(!cat){ alert('Seleziona una categoria.'); return; }
+
+  const modEl = document.querySelector('#pkg-pills-mod .pill.on');
+  const modVal = modEl ? modEl.dataset.val : '';
+  const matEl = document.getElementById('pkg-form-mat');
+  const matNome = matEl ? matEl.value : '';
+  const listino = parseFloat(document.getElementById('pkg-form-listino')?.value)||0;
+  const volume = Math.max(1, parseInt(document.getElementById('pkg-form-volume')?.value)||1);
+  const offerta = parseFloat(document.getElementById('pkg-form-offerta')?.value)||listino;
+
+  if(listino<=0){ alert('Inserisci un prezzo listino valido (> 0).'); return; }
+
+  // Costruisce la descrizione della riga
+  let desc = cat.nome;
+  if(modVal) desc += ` — ${modVal}`;
+  if(matNome) desc += ` — ${matNome}`;
+
+  const riga = {
+    id: uid(),
+    clientType: ct,
+    catNome: cat.nome,
+    desc: desc,
+    listino: listino,
+    volume: volume,
+    offerta: offerta,
+  };
+
+  P.pkg.righe.push(riga);
+  renderPkgEdit();
+  updateStickyPkg();
+}
+
+/* =====================================================================
+   PACCHETTI — GESTIONE RIGHE
+===================================================================== */
+function pkgRemoveRiga(id){
+  P.pkg.righe = P.pkg.righe.filter(r=>r.id!==id);
+  renderPkgEdit();
+  updateStickyPkg();
+}
+
+function pkgUpdateOfferta(id, val){
+  const r = P.pkg.righe.find(r=>r.id===id);
+  if(r){ r.offerta = parseFloat(val)||0; renderPkgSummaryOnly(); updateStickyPkg(); }
+}
+
+function pkgUpdateVolume(id, val){
+  const r = P.pkg.righe.find(r=>r.id===id);
+  if(r){ r.volume = Math.max(1, parseInt(val)||1); renderPkgSummaryOnly(); updateStickyPkg(); }
+}
+
+// Re-renderizza solo la card riepilogo senza distruggere il form
+function renderPkgSummaryOnly(){
+  const el = document.getElementById('pkg-summary-card');
+  if(!el) return;
+  el.innerHTML = buildPkgSummaryHtml();
+}
+
+/* =====================================================================
+   PACCHETTI — RENDER PRINCIPALE
+===================================================================== */
+function renderPkgEdit(){
+  const ev = document.getElementById('pkg-edit-view');
+  if(!ev) return;
+
+  // Card intestazione offerta
+  const cardIntestazione = `
+  <div class="card">
+    <div class="card-hd"><h3>Intestazione offerta</h3></div>
+    <div class="card-bd">
+      <div class="row2">
+        <div class="fg">
+          <label>Nome pacchetto</label>
+          <input type="text" id="pkg-nome" placeholder="Es. Pacchetto Studio Rossi" value="${escHtml(P.pkg.nome)}" oninput="P.pkg.nome=this.value">
+        </div>
+        <div class="fg">
+          <label>Cliente</label>
+          <input type="text" id="pkg-cliente" placeholder="Nome studio / laboratorio" value="${escHtml(P.pkg.cliente)}" oninput="P.pkg.cliente=this.value">
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label>Valida fino al</label>
+        <input type="date" id="pkg-validita" value="${escHtml(P.pkg.validita)}" oninput="P.pkg.validita=this.value">
+      </div>
+    </div>
+  </div>`;
+
+  // Card soglia sostenibilità
+  const cardSoglia = `
+  <div class="card">
+    <div class="card-hd"><h3>Soglia sostenibilit&agrave;</h3></div>
+    <div class="card-bd">
+      <div class="row2" style="align-items:end">
+        <div class="fg" style="margin-bottom:0">
+          <label>Sconto massimo sostenibile (%)</label>
+          <input type="number" id="pkg-soglia" min="0" max="100" step="1" value="${P.soglia}" placeholder="20">
+        </div>
+        <button class="btn btn-teal" onclick="pkgApplySoglia()">Applica</button>
+      </div>
+      <p class="note" style="margin-top:8px">
+        Le righe con sconto &le; <strong>${P.soglia-5}%</strong> sono sostenibili (verde).
+        Tra <strong>${P.soglia-5}%</strong> e <strong>${P.soglia}%</strong> sono in attenzione (giallo).
+        Oltre <strong>${P.soglia}%</strong> non sono sostenibili (rosso).
+      </p>
+    </div>
+  </div>`;
+
+  // Card righe pacchetto
+  let righeHtml = '';
+  if(P.pkg.righe.length === 0){
+    righeHtml = `<div class="empty" style="padding:24px"><p>Nessuna riga. Aggiungi voci usando il modulo qui sotto.</p></div>`;
+  } else {
+    const rows = P.pkg.righe.map(r=>{
+      const sfClass = rigaSemaforoClass(r);
+      const sfLabel = sfClass==='sf-green' ? '<span class="sf-label-green">Sostenibile</span>'
+                    : sfClass==='sf-yellow' ? '<span class="sf-label-yellow">Attenzione</span>'
+                    : '<span class="sf-label-red">Non sostenibile</span>';
+      const disc = rigaSconto(r);
+      const prezzoMin = rigaPrezzoMin(r);
+      return `<tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px" class="${sfClass}">
+            <span class="sf-dot"></span>
+            ${sfLabel}
+          </div>
+          <div class="pkg-min-price">Min. cons.: ${eur(prezzoMin)}</div>
+        </td>
+        <td>
+          <div style="font-weight:600;font-size:13px">${escHtml(r.desc)}</div>
+          <div style="font-size:11px;color:var(--g500)">${r.clientType==='studi'?'Studi':'Lab'}</div>
+        </td>
+        <td class="num-col">${eur(r.listino)}</td>
+        <td class="num-col">
+          <input type="number" min="1" step="1" value="${r.volume}"
+            style="width:70px;text-align:right;padding:4px 6px;font-size:13px"
+            onchange="pkgUpdateVolume('${r.id}',this.value)">
+        </td>
+        <td class="num-col">
+          <input type="number" min="0" step="0.01" value="${r.offerta.toFixed(2)}"
+            style="width:90px;text-align:right;padding:4px 6px;font-size:13px"
+            onchange="pkgUpdateOfferta('${r.id}',this.value)">
+        </td>
+        <td class="num-col ${disc>P.soglia?'sf-label-red':disc>P.soglia-5?'sf-label-yellow':'sf-label-green'}" style="font-weight:700">
+          ${disc.toFixed(1)}%
+        </td>
+        <td class="num-col">${eur(prezzoMin)}</td>
+        <td class="act-col">
+          <button class="btn btn-red btn-sm" onclick="pkgRemoveRiga('${r.id}')" title="Elimina">&#215;</button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    righeHtml = `<div style="overflow-x:auto">
+      <table class="pkg-table">
+        <thead><tr>
+          <th>Semaforo</th>
+          <th>Lavorazione</th>
+          <th class="num-col">P. Listino</th>
+          <th class="num-col">Vol./mese</th>
+          <th class="num-col">P. Offerta</th>
+          <th class="num-col">Sconto %</th>
+          <th class="num-col">P. Min. Cons.</th>
+          <th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  const cardRighe = `
+  <div class="card">
+    <div class="card-hd">
+      <h3>Righe offerta</h3>
+      <span style="font-size:12px;color:var(--g500)">${P.pkg.righe.length} riga/e</span>
+    </div>
+    <div class="card-bd" style="padding:0 0 8px">
+      ${righeHtml}
+    </div>
+  </div>`;
+
+  // Card aggiungi riga
+  const cardAggiungi = pkgRenderAddForm();
+
+  // Card riepilogo
+  const cardRiepilogo = `
+  <div class="card" id="pkg-summary-card">
+    ${buildPkgSummaryHtml()}
+  </div>`;
+
+  // Bottoni azione
+  const cardAzioni = `
+  <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+    <button class="btn btn-teal" onclick="pkgSave()">&#128190;&nbsp; Salva offerta</button>
+    <button class="btn btn-gray" onclick="pkgNewPkg()">+ Nuova offerta</button>
+    <button class="btn btn-gray" onclick="exportPkgPdf()">&#9113;&nbsp; Esporta Offerta PDF</button>
+  </div>`;
+
+  ev.innerHTML = cardIntestazione + cardSoglia + cardRighe + cardAggiungi + cardRiepilogo + cardAzioni;
+}
+
+function buildPkgSummaryHtml(){
+  const s = pkgSummary();
+  const scontoClass = s.scontoMedio > P.soglia ? 'warn' : '';
+  return `
+    <div class="card-hd"><h3>Riepilogo pacchetto</h3></div>
+    <div class="card-bd">
+      <div class="pkg-summary">
+        <div class="pkg-sum-card highlight">
+          <div class="val">${eur(s.totMensile)}</div>
+          <div class="lbl">Ricavo mensile stimato</div>
+        </div>
+        <div class="pkg-sum-card highlight">
+          <div class="val">${eur(s.totAnnuo)}</div>
+          <div class="lbl">Ricavo annuo stimato (×12)</div>
+        </div>
+        <div class="pkg-sum-card">
+          <div class="val">${eur(s.totListMensile)}</div>
+          <div class="lbl">Ricavo a listino / mese</div>
+        </div>
+        <div class="pkg-sum-card">
+          <div class="val">${eur(s.totListAnnuo)}</div>
+          <div class="lbl">Ricavo a listino / anno</div>
+        </div>
+        <div class="pkg-sum-card ${scontoClass}">
+          <div class="val">${s.scontoMedio.toFixed(1)}%</div>
+          <div class="lbl">Sconto medio${s.scontoMedio>P.soglia?' ⚠ Supera soglia':''}</div>
+        </div>
+        <div class="pkg-sum-card ${s.valoreTavolo>0?'warn':''}">
+          <div class="val">${eur(s.valoreTavolo)}</div>
+          <div class="lbl">Valore lasciato sul tavolo / anno</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* =====================================================================
+   PACCHETTI — SOGLIA
+===================================================================== */
+function pkgApplySoglia(){
+  const v = parseInt(document.getElementById('pkg-soglia')?.value)||20;
+  P.soglia = Math.max(0, Math.min(100, v));
+  renderPkgEdit();
+  updateStickyPkg();
+}
+
+/* =====================================================================
+   PACCHETTI — SALVATAGGIO / CARICAMENTO
+===================================================================== */
+function pkgSave(){
+  if(!P.pkg.nome){ alert('Inserisci il nome del pacchetto.'); return; }
+  P.pkg.id = P.pkg.id || uid();
+  const hist = pkgLoadHistory();
+  const idx = hist.findIndex(h=>h.id===P.pkg.id);
+  const snap = JSON.parse(JSON.stringify(P.pkg));
+  snap.savedAt = new Date().toLocaleDateString('it-IT');
+  if(idx>=0) hist[idx]=snap; else hist.unshift(snap);
+  if(hist.length>20) hist.length=20;
+  try{ localStorage.setItem(PKG_LS, JSON.stringify(hist)); }catch(e){}
+  alert('Offerta salvata!');
+}
+
+function pkgLoadHistory(){
+  try{ return JSON.parse(localStorage.getItem(PKG_LS)||'[]'); }catch(e){ return []; }
+}
+
+function pkgNewPkg(){
+  if(P.pkg.righe.length>0){
+    if(!confirm('Creare una nuova offerta? Le modifiche non salvate andranno perse.')){ return; }
+  }
+  P.pkg = { id:null, nome:'', cliente:'', validita:'', righe:[] };
+  pkgSwitchView('edit');
+  renderPkgEdit();
+  updateStickyPkg();
+}
+
+function pkgLoadPkg(id){
+  const hist = pkgLoadHistory();
+  const h = hist.find(p=>p.id===id);
+  if(!h) return;
+  if(P.pkg.righe.length>0){
+    if(!confirm('Caricare questa offerta? Le modifiche non salvate andranno perse.')){ return; }
+  }
+  P.pkg = JSON.parse(JSON.stringify(h));
+  pkgSwitchView('edit');
+  renderPkgEdit();
+  updateStickyPkg();
+}
+
+function pkgDeletePkg(id){
+  if(!confirm('Eliminare questa offerta dallo storico?')) return;
+  let hist = pkgLoadHistory();
+  hist = hist.filter(h=>h.id!==id);
+  try{ localStorage.setItem(PKG_LS, JSON.stringify(hist)); }catch(e){}
+  renderPkgHistory();
+}
+
+/* =====================================================================
+   PACCHETTI — STORICO
+===================================================================== */
+function renderPkgHistory(){
+  const hv = document.getElementById('pkg-hist-view');
+  if(!hv) return;
+  const hist = pkgLoadHistory();
+
+  if(!hist.length){
+    hv.innerHTML=`
+    <div class="card">
+      <div class="card-bd">
+        <div class="empty" style="padding:32px">
+          <p>Nessuna offerta salvata.</p>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
+
+  const items = hist.map(h=>{
+    const rs = h.righe||[];
+    const totMens = rs.reduce((s,r)=>s+r.offerta*r.volume,0);
+    // calcola il semaforo peggiore
+    let worst = 'sf-green';
+    rs.forEach(r=>{
+      const sc = rigaSemaforoClass(r);
+      if(sc==='sf-red') worst='sf-red';
+      else if(sc==='sf-yellow'&&worst!=='sf-red') worst='sf-yellow';
+    });
+    const dotColor = worst==='sf-green'?'#22c55e':worst==='sf-yellow'?'#eab308':'#ef4444';
+    return `
+    <div class="pkg-hist-item">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="width:12px;height:12px;border-radius:50%;background:${dotColor};flex-shrink:0;display:inline-block"></span>
+            <strong style="font-size:14px">${escHtml(h.nome||'(senza nome)')}</strong>
+            ${h.cliente?`<span style="font-size:12px;color:var(--g500)">${escHtml(h.cliente)}</span>`:''}
+          </div>
+          <div style="font-size:12px;color:var(--g500);margin-top:4px">
+            Salvato: ${h.savedAt||'—'} &nbsp;&middot;&nbsp; ${rs.length} riga/e &nbsp;&middot;&nbsp; Mensile: ${eur(totMens)}
+            ${h.validita?` &nbsp;&middot;&nbsp; Valida fino: ${h.validita}`:''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-teal btn-sm" onclick="pkgLoadPkg('${h.id}')">Carica</button>
+          <button class="btn btn-red btn-sm" onclick="pkgDeletePkg('${h.id}')">Elimina</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  hv.innerHTML=`
+  <div class="card">
+    <div class="card-hd"><h3>Storico offerte salvate</h3></div>
+    <div class="card-bd" style="padding:14px">
+      ${items}
+    </div>
+  </div>`;
+}
+
+/* =====================================================================
+   PACCHETTI — EXPORT PDF
+===================================================================== */
+function exportPkgPdf(){
+  if(!P.pkg.righe.length){ alert('Aggiungi almeno una riga prima di esportare.'); return; }
+  if(!window.jspdf){ alert('Libreria jsPDF non caricata. Verifica la connessione.'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'p', unit:'mm', format:'a4' });
+  const W=210, H=297, ML=15, MR=15;
+  const cW = W-ML-MR;
+  let y = ML;
+
+  const TEAL=[13,148,136], DARK=[17,24,39], GRAY=[107,114,128], LGRAY=[200,200,200], LIGHT=[243,244,246];
+  const GREEN=[22,101,52], ORANGE=[194,65,12];
+
+  function sf(style,size){ doc.setFont('helvetica',style); doc.setFontSize(size); }
+  function tc(rgb){ doc.setTextColor(rgb[0],rgb[1],rgb[2]); }
+  function fill(fx,fy,fw,fh,c){ doc.setFillColor(c[0],c[1],c[2]); doc.rect(fx,fy,fw,fh,'F'); }
+  function hline(fy,c){ c=c||LGRAY; doc.setDrawColor(c[0],c[1],c[2]); doc.line(ML,fy,W-MR,fy); }
+  function newPageIfNeeded(need){
+    if(y+need>H-20){ doc.addPage(); y=ML; }
+  }
+
+  // HEADER
+  fill(ML,y,cW,22,DARK);
+  fill(ML+3,y+4,14,14,TEAL);
+  sf('bold',11); doc.setTextColor(255,255,255); doc.text('JD',ML+10,y+13,{align:'center'});
+  sf('bold',14); doc.text('JD Milling Center',ML+22,y+11);
+  sf('normal',7); doc.setTextColor(204,251,241); doc.text('OFFERTA COMMERCIALE — PACCHETTI & OFFERTE',ML+22,y+17);
+  y+=26;
+
+  // META
+  sf('normal',9); tc(GRAY);
+  doc.text('Data: '+new Date().toLocaleDateString('it-IT'), ML, y);
+  y+=5;
+
+  tc(DARK);
+  if(P.pkg.nome){ sf('bold',11); doc.text(P.pkg.nome, ML, y); y+=6; }
+  if(P.pkg.cliente){ sf('normal',9); tc(GRAY); doc.text('Cliente: ', ML, y); tc(DARK); sf('normal',9); doc.text(P.pkg.cliente, ML+18, y); y+=5; }
+  if(P.pkg.validita){
+    sf('normal',9); tc(GRAY); doc.text('Valida fino al: ', ML, y); tc(DARK); doc.text(P.pkg.validita, ML+30, y); y+=5;
+  }
+  y+=2; hline(y,DARK); y+=5;
+
+  // TABLE HEADER
+  const C2={desc:{x:ML+2,w:72},unit:{x:ML+75,w:26},vol:{x:ML+102,w:20},tot:{x:ML+123,w:cW-125}};
+  fill(ML,y,cW,7,LIGHT);
+  sf('bold',8); tc(GRAY);
+  doc.text('Lavorazione',C2.desc.x,y+5);
+  doc.text('P. Offerta Unit.',C2.unit.x+C2.unit.w,y+5,{align:'right'});
+  doc.text('Vol./mese',C2.vol.x+C2.vol.w,y+5,{align:'right'});
+  doc.text('Tot. Mensile',C2.tot.x+C2.tot.w,y+5,{align:'right'});
+  y+=8;
+
+  // TABLE ROWS
+  let grandTotMens = 0;
+  P.pkg.righe.forEach((r,i)=>{
+    newPageIfNeeded(10);
+    const totRiga = r.offerta * r.volume;
+    grandTotMens += totRiga;
+    if(i%2===0) fill(ML,y,cW,8,[249,250,251]);
+    const lines = doc.splitTextToSize(r.desc, C2.desc.w-2);
+    const rh = Math.max(8, lines.length*4.5+2);
+    newPageIfNeeded(rh);
+    if(i%2===0) fill(ML,y,cW,rh,[249,250,251]);
+    sf('normal',8); tc(DARK);
+    doc.text(lines, C2.desc.x, y+5);
+    doc.text(eur(r.offerta), C2.unit.x+C2.unit.w, y+5, {align:'right'});
+    doc.text(String(r.volume), C2.vol.x+C2.vol.w, y+5, {align:'right'});
+    sf('bold',8); doc.text(eur(totRiga), C2.tot.x+C2.tot.w, y+5, {align:'right'});
+    y+=rh;
+  });
+
+  // TOTALS
+  newPageIfNeeded(20); hline(y,DARK); y+=5;
+  const TX2 = ML + cW*0.5;
+  sf('bold',10); tc(DARK);
+  doc.text('Totale mensile stimato:', TX2, y);
+  doc.text(eur(grandTotMens), W-MR, y, {align:'right'});
+  y+=6;
+  sf('bold',12); tc(TEAL);
+  doc.text('Totale annuo stimato (\u00d712):', TX2, y);
+  doc.text(eur(grandTotMens*12), W-MR, y, {align:'right'});
+  y+=6;
+
+  // DISCLAIMER
+  newPageIfNeeded(14);
+  y+=4; hline(y); y+=5;
+  sf('italic',7); tc(GRAY);
+  const validStr = P.pkg.validita ? `Offerta valida fino al ${P.pkg.validita}` : 'Verificare la validit\u00e0 con il commerciale di riferimento';
+  doc.text(`Prezzi IVA esclusa \u2014 Componentistica protesica esclusa \u2014 ${validStr}`, W/2, y, {align:'center'});
+
+  // FOOTER
+  const footY = H-8;
+  hline(footY); sf('normal',7); tc(GRAY);
+  doc.text('JD Milling Center \u2014 Preventivatore Commerciali', W/2, footY+4, {align:'center'});
+
+  const nomePkg = (P.pkg.nome||'Offerta').replace(/[^a-zA-Z0-9_\-]/g,'_');
+  const dataStr = new Date().toLocaleDateString('it-IT').replace(/\//g,'-');
+  doc.save(`Offerta_JD_${nomePkg}_${dataStr}.pdf`);
+}
+
+/* =====================================================================
+   HISTORY
+===================================================================== */
+const LS_KEY2 = 'jd_prev_history';  // alias per chiarezza (usa LS_KEY)
+
+/* =====================================================================
+   INIT
+===================================================================== */
+function init(){
+  populateCatSelect();
+  renderQuote();
+  renderTotals();
+  renderPkgEdit();
+  initPWA();
+}
+
+function initPWA(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+
+  try{
+    const sz=180;
+    const cv=document.createElement('canvas');
+    cv.width=cv.height=sz;
+    const cx=cv.getContext('2d');
+    cx.fillStyle='#111827';
+    cx.fillRect(0,0,sz,sz);
+    const r=28,x=16,yc=16,w=sz-32,h=sz-32;
+    cx.fillStyle='#0d9488';
+    cx.beginPath();
+    cx.moveTo(x+r,yc);cx.lineTo(x+w-r,yc);cx.arcTo(x+w,yc,x+w,yc+r,r);
+    cx.lineTo(x+w,yc+h-r);cx.arcTo(x+w,yc+h,x+w-r,yc+h,r);
+    cx.lineTo(x+r,yc+h);cx.arcTo(x,yc+h,x,yc+h-r,r);
+    cx.lineTo(x,yc+r);cx.arcTo(x,yc,x+r,yc,r);
+    cx.closePath();cx.fill();
+    cx.fillStyle='#ffffff';
+    cx.font='bold 76px -apple-system,Arial,sans-serif';
+    cx.textAlign='center';cx.textBaseline='middle';
+    cx.fillText('JD',sz/2,sz/2+3);
+    const lnk=document.createElement('link');
+    lnk.rel='apple-touch-icon';
+    lnk.href=cv.toDataURL('image/png');
+    document.head.appendChild(lnk);
+  }catch(e){}
+}
+
+init();
+</script>
+</body>
+</html>
