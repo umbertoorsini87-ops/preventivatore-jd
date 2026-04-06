@@ -1812,7 +1812,10 @@ function pkgRenderAddForm(){
       </div>
       <div class="fg">
         <label>Prezzo offerta unitario (€)</label>
-        <input type="number" id="pkg-form-offerta" min="0" step="0.01" placeholder="0,00">
+        <input type="number" id="pkg-form-offerta" min="0" step="0.01" placeholder="0,00"
+          data-user-edited="0"
+          oninput="this.dataset.userEdited='1';pkgFormUpdateSconto()">
+        <div id="pkg-form-sconto-info" style="font-size:12px;margin-top:4px;font-weight:600;min-height:16px"></div>
       </div>
       <button class="btn btn-teal btn-full" onclick="pkgAddRiga()">+ Aggiungi riga</button>
     </div>
@@ -1839,6 +1842,12 @@ function pkgOnCatChange(){
   const listinoEl = document.getElementById('pkg-form-listino');
   const offertaEl = document.getElementById('pkg-form-offerta');
   if(!cat||!dyn) return;
+
+  // Nuova categoria = nuovo baseline: resetta offerta e flag user-edited
+  if(listinoEl){ listinoEl.value=''; }
+  if(offertaEl){ offertaEl.value=''; offertaEl.dataset.userEdited='0'; }
+  const infoEl = document.getElementById('pkg-form-sconto-info');
+  if(infoEl) infoEl.textContent='';
 
   let dynHtml = '';
 
@@ -1885,8 +1894,11 @@ function pkgAutoPrice(){
     const matNome = matEl ? matEl.value : (cat.mat ? cat.mat[0].nome : '');
     const prezzo = pkgCalcListino(cat, modVal, matNome);
     if(listinoEl){ listinoEl.value = prezzo.toFixed(2); listinoEl.readOnly = true; }
-    if(offertaEl && (!offertaEl.value || offertaEl.value==='0.00')){ offertaEl.value = prezzo.toFixed(2); }
-    if(offertaEl && listinoEl && listinoEl.value){ /* keep user-edited offerta */ }
+    // Aggiorna offerta solo se l'utente non ha ancora modificato il campo manualmente
+    if(offertaEl && offertaEl.dataset.userEdited !== '1'){
+      offertaEl.value = prezzo.toFixed(2);
+    }
+    pkgFormUpdateSconto();
   } else {
     if(listinoEl){ listinoEl.readOnly = false; }
   }
@@ -1895,8 +1907,31 @@ function pkgAutoPrice(){
 function pkgOnListinoChange(){
   const listinoEl = document.getElementById('pkg-form-listino');
   const offertaEl = document.getElementById('pkg-form-offerta');
-  if(listinoEl && offertaEl && !offertaEl.dataset.userEdited){
+  if(listinoEl && offertaEl && offertaEl.dataset.userEdited !== '1'){
     offertaEl.value = listinoEl.value;
+  }
+  pkgFormUpdateSconto();
+}
+
+function pkgFormUpdateSconto(){
+  const listinoEl = document.getElementById('pkg-form-listino');
+  const offertaEl = document.getElementById('pkg-form-offerta');
+  const infoEl    = document.getElementById('pkg-form-sconto-info');
+  if(!listinoEl||!offertaEl||!infoEl) return;
+  const list = parseFloat(listinoEl.value)||0;
+  const off  = parseFloat(offertaEl.value)||0;
+  if(list<=0||off<=0){ infoEl.textContent=''; return; }
+  const sc = (1 - off/list)*100;
+  if(sc < 0){
+    infoEl.style.color='var(--red)';
+    infoEl.textContent='\u26a0 Prezzo offerta superiore al listino';
+  } else if(sc < 0.05){
+    infoEl.style.color='var(--g500)';
+    infoEl.textContent='Nessuno sconto applicato';
+  } else {
+    const color = sc > P.soglia ? 'var(--red)' : sc > P.soglia-5 ? '#92400e' : 'var(--teal-d)';
+    infoEl.style.color = color;
+    infoEl.textContent = 'Sconto: '+sc.toFixed(1)+'%';
   }
 }
 
@@ -1929,7 +1964,10 @@ function pkgAddRiga(){
   const riga = {
     id: uid(),
     clientType: ct,
+    catId: cat.id,
     catNome: cat.nome,
+    modVal: modVal,
+    matNome: matNome,
     desc: desc,
     listino: listino,
     volume: volume,
@@ -2156,6 +2194,7 @@ function pkgSave(){
   const idx = hist.findIndex(h=>h.id===P.pkg.id);
   const snap = JSON.parse(JSON.stringify(P.pkg));
   snap.savedAt = new Date().toLocaleDateString('it-IT');
+  snap.soglia = P.soglia;
   if(idx>=0) hist[idx]=snap; else hist.unshift(snap);
   if(hist.length>20) hist.length=20;
   try{ localStorage.setItem(PKG_LS, JSON.stringify(hist)); }catch(e){}
@@ -2184,6 +2223,7 @@ function pkgLoadPkg(id){
     if(!confirm('Caricare questa offerta? Le modifiche non salvate andranno perse.')){ return; }
   }
   P.pkg = JSON.parse(JSON.stringify(h));
+  if(h.soglia !== undefined) P.soglia = h.soglia;
   pkgSwitchView('edit');
   renderPkgEdit();
   updateStickyPkg();
@@ -2341,11 +2381,16 @@ function exportPkgPdf(){
     tc(DARK);
     sf('bold',7);
     doc.text(eur(r.offerta),        C2.off.x+C2.off.w,   y+5, {align:'right'});
-    // sconto colorato
-    const discColor = disc>P.soglia?[185,28,28]:disc>P.soglia-5?[133,77,14]:[22,101,52];
-    tc(discColor);
+    // sconto colorato (mostra — se nessuno sconto)
     sf('bold',7);
-    doc.text(disc.toFixed(1)+'%',   C2.disc.x+C2.disc.w, y+5, {align:'right'});
+    if(disc < 0.05){
+      tc(GRAY);
+      doc.text('\u2014', C2.disc.x+C2.disc.w, y+5, {align:'right'});
+    } else {
+      const discColor = disc>P.soglia?[185,28,28]:disc>P.soglia-5?[133,77,14]:[22,101,52];
+      tc(discColor);
+      doc.text(disc.toFixed(1)+'%', C2.disc.x+C2.disc.w, y+5, {align:'right'});
+    }
     sf('normal',7); tc(DARK);
     doc.text(String(r.volume),      C2.vol.x+C2.vol.w,   y+5, {align:'right'});
     sf('bold',7);
