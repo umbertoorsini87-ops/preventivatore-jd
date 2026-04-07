@@ -427,7 +427,9 @@ table.pkg-table tr:last-child td{border-bottom:none}
         <div id="quote-body"></div>
       </div>
       <div class="disclaimer" style="background:#fff7ed;color:#c2410c;font-style:normal;font-weight:600;border-top:1px solid #fed7aa">
-        IMPORTANTE: Prezzi riferiti alla sola lavorazione &mdash; progettazione, componentistica implantare e altri servizi aggiuntivi esclusi
+        IMPORTANTE: La componentistica protesica &egrave; esclusa dai suddetti prezzi.<br>
+        Spese di spedizione con ordini inferiori a 100&euro;: 10&euro;<br>
+        Spese di spedizione con ordini superiori a 100&euro;: gratuita
       </div>
     </div>
 
@@ -435,9 +437,6 @@ table.pkg-table tr:last-child td{border-bottom:none}
       <div class="card-hd"><h3>Riepilogo e Spedizione</h3></div>
       <div class="card-bd">
         <div class="ship-box">
-          <div style="font-size:12px;font-weight:700;color:var(--g700);margin-bottom:6px">Opzioni spedizione</div>
-          <label class="chk-row"><input type="checkbox" id="chk-exchange" onchange="S.ship.exchange=this.checked;renderTotals()"> Ritiro / Exchange &nbsp;<strong>+10,00 &euro;</strong></label>
-          <label class="chk-row"><input type="checkbox" id="chk-urgent" onchange="S.ship.urgent=this.checked;renderTotals()"> Urgente &nbsp;<strong>+35,00 &euro;</strong></label>
           <div class="ship-auto" id="ship-auto-msg"></div>
         </div>
         <div id="totals-body"></div>
@@ -534,7 +533,7 @@ function forceUpdate(){
 /* =====================================================================
    VERSIONING
 ===================================================================== */
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.7.0";
 const APP_DATE    = "2026-04-07";
 
 /* =====================================================================
@@ -677,7 +676,7 @@ const S = {
   editingId: null,
   cliente: '',
   paziente: '',
-  ship: {exchange:false, urgent:false},
+  ship: {},
   quoteNum: Math.floor(Date.now()/1000),
 };
 let _uid = 1;
@@ -1362,11 +1361,7 @@ function renderTotals(){
   const iva22 = imp22*0.22;
 
   const shipAuto = totImp>0 && totImp<100 ? 10 : 0;
-  const shipEx   = S.ship.exchange ? 10 : 0;
-  const shipUrg  = S.ship.urgent  ? 35 : 0;
-  const totShip  = shipAuto+shipEx+shipUrg;
-
-  const grand = totImp+iva4+iva22+totShip;
+  const grand = totImp+iva4+iva22+shipAuto;
 
   let html = '';
   if(imp0>0)  html+=`<div class="tot-row dim"><span>Imponibile 0% (Disp. Medici)</span><span class="tot-val">${eur(imp0)}</span></div>`;
@@ -1379,8 +1374,6 @@ function renderTotals(){
     if(iva22>0) html+=`<div class="tot-row iva"><span>IVA 22%</span><span class="tot-val">${eur(iva22)}</span></div>`;
     html+=`<hr class="tot-sep">`;
     html+=`<div class="tot-row ship"><span>Spedizione</span><span class="tot-val">${shipAuto>0?eur(shipAuto):'Gratuita'}</span></div>`;
-    if(shipEx>0) html+=`<div class="tot-row ship"><span>Ritiro / Exchange</span><span class="tot-val">${eur(shipEx)}</span></div>`;
-    if(shipUrg>0) html+=`<div class="tot-row ship"><span>Urgente</span><span class="tot-val">${eur(shipUrg)}</span></div>`;
     html+=`<hr class="tot-sep2">`;
     html+=`<div class="tot-row grand"><span>TOTALE FINALE</span><span class="tot-val">${eur(grand)}</span></div>`;
   }
@@ -1410,11 +1403,8 @@ function closeModal(id){ document.getElementById(id).style.display='none'; }
 function confirmReset(){ openModal('modal-reset'); }
 function doReset(){
   S.items=[];S.editingId=null;S.cliente='';S.paziente='';
-  S.ship.exchange=false;S.ship.urgent=false;
   document.getElementById('inp-cliente').value='';
   document.getElementById('inp-paziente').value='';
-  document.getElementById('chk-exchange').checked=false;
-  document.getElementById('chk-urgent').checked=false;
   document.getElementById('sel-cat').value='';
   document.getElementById('dyn-form').innerHTML='';
   document.getElementById('price-prev').style.display='none';
@@ -1508,8 +1498,7 @@ function handlePrint(){
   const totImp=imp0+imp4+imp22;
   const iva4=imp4*0.04, iva22=imp22*0.22;
   const shipAuto=totImp>0&&totImp<100?10:0;
-  const shipEx=S.ship.exchange?10:0, shipUrg=S.ship.urgent?35:0;
-  const grand=totImp+iva4+iva22+shipAuto+shipEx+shipUrg;
+  const grand=totImp+iva4+iva22+shipAuto;
   const TX=ML+cW*0.55;
 
   function trow(lbl,val,bold){
@@ -1527,22 +1516,23 @@ function handlePrint(){
   if(iva22>0) trow('IVA 22%',eur(iva22));
   newPageIfNeeded(4); hline(y); y+=4;
   trow('Spedizione', shipAuto>0?eur(shipAuto):'Gratuita');
-  if(shipEx>0)  trow('Ritiro / Exchange',eur(shipEx));
-  if(shipUrg>0) trow('Urgente',eur(shipUrg));
   newPageIfNeeded(10); hline(y,DARK); y+=4;
   trow('TOTALE FINALE',eur(grand),true);
 
-  // ── DISCLAIMER COMPONENTISTICA ──
-  const impTxt = 'I prezzi indicati nel pacchetto si riferiscono esclusivamente alla lavorazione selezionata. Non sono inclusi nell\'offerta scontata: progettazione, stampa modello prototipato, analoghi digitali, dima chirurgica, componentistica implantare (monconi, viti, abutment ecc.) o qualsiasi altro servizio o componente aggiuntivo.';
-  const impLines = doc.splitTextToSize(impTxt, cW-8);
-  const impH = 7 + impLines.length * 3.8;
+  // ── DISCLAIMER ──
+  const impBodyLines = [
+    'La componentistica protesica \u00e8 esclusa dai suddetti prezzi.',
+    'Spese di spedizione con ordini inferiori a 100\u20ac: 10\u20ac',
+    'Spese di spedizione con ordini superiori a 100\u20ac: gratuita'
+  ];
+  const impH = impBodyLines.length * 4 + 7;
   newPageIfNeeded(impH+2);
   fill(ML,y,cW,impH,[255,247,237]);
   doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,impH,'S');
   sf('bold',8); doc.setTextColor(194,65,12);
   doc.text('IMPORTANTE:',ML+3,y+5);
   sf('normal',7.5); doc.setTextColor(194,65,12);
-  doc.text(impLines,ML+3,y+9);
+  doc.text(impBodyLines,ML+3,y+9,{lineHeightFactor:1.4});
   y+=impH+2;
 
   // ── FOOTER ──
@@ -1614,12 +1604,10 @@ function doLoadHist(){
   S.cliente = h.cliente||'';
   S.paziente = h.paziente||'';
   S.items = h.items||[];
-  S.ship = h.ship||{exchange:false,urgent:false};
+  S.ship = {};
   S.quoteNum = h.id;
   document.getElementById('inp-cliente').value = S.cliente;
   document.getElementById('inp-paziente').value = S.paziente;
-  document.getElementById('chk-exchange').checked = S.ship.exchange;
-  document.getElementById('chk-urgent').checked = S.ship.urgent;
   document.getElementById('btn-studi').classList.toggle('on', S.clientType==='studi');
   document.getElementById('btn-lab').classList.toggle('on', S.clientType==='lab');
   populateCatSelect();
