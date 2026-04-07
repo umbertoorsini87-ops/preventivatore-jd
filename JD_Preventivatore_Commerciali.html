@@ -534,7 +534,7 @@ function forceUpdate(){
 /* =====================================================================
    VERSIONING
 ===================================================================== */
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.4.0";
 const APP_DATE    = "2026-04-06";
 
 /* =====================================================================
@@ -1668,7 +1668,6 @@ function switchTab(t){
 const PKG_LS = 'jd_pkg_history';
 
 const P = {
-  soglia: 20,
   pkg: {
     id: null,
     nome: '',
@@ -1682,25 +1681,14 @@ const P = {
 /* =====================================================================
    PACCHETTI — CALCOLI
 ===================================================================== */
-function rigaSconto(r){ return r.listino>0 ? (1 - r.offerta/r.listino)*100 : 0; }
-
-function rigaSemaforoClass(r){
-  const disc = rigaSconto(r);
-  if(disc < 0) return 'sf-green';
-  if(disc <= P.soglia - 5) return 'sf-green';
-  if(disc <= P.soglia) return 'sf-yellow';
-  return 'sf-red';
-}
-
-function rigaPrezzoMin(r){ return r.listino * (1 - P.soglia/100); }
+function rigaOfferta(r){ return r.listino * (1 - (r.sconto||0)/100); }
 
 function pkgSummary(){
   const rs = P.pkg.righe;
-  const totOff = rs.reduce((s,r)=>s+r.offerta*r.volume, 0);
+  const totOff  = rs.reduce((s,r)=>s+r.offerta*r.volume, 0);
   const totList = rs.reduce((s,r)=>s+r.listino*r.volume, 0);
-  const scontoMedio = rs.length ? rs.reduce((s,r)=>s+rigaSconto(r),0)/rs.length : 0;
-  const valoreTavolo = (totList - totOff) * 12;
-  return { totMensile:totOff, totAnnuo:totOff*12, totListMensile:totList, totListAnnuo:totList*12, scontoMedio, valoreTavolo };
+  const scontoMedio = rs.length ? rs.reduce((s,r)=>s+(r.sconto||0),0)/rs.length : 0;
+  return { totMensile:totOff, totAnnuo:totOff*12, totListMensile:totList, scontoMedio };
 }
 
 /* =====================================================================
@@ -1772,13 +1760,10 @@ function pkgCalcListino(cat, modVal, matNome){
    PACCHETTI — RENDER FORM AGGIUNGI RIGA (inline nel renderPkgEdit)
 ===================================================================== */
 function pkgRenderAddForm(){
-  // Stato del form aggiungi riga (leggere da elementi DOM con id pkg-form-*)
   const ct = document.getElementById('pkg-form-type')?.value || 'studi';
   const cats = pkgGetCatsForType(ct);
-
   const catOpts = cats.map(c=>`<option value="${c.id}">${escHtml(c.nome)}</option>`).join('');
 
-  // Costruisci il form html
   return `
   <div class="card">
     <div class="card-hd"><h3>Aggiungi riga offerta</h3></div>
@@ -1800,24 +1785,24 @@ function pkgRenderAddForm(){
         </div>
       </div>
       <div id="pkg-form-dyn"></div>
+      <div class="fg" id="pkg-form-listino-wrap" style="display:none">
+        <label>Prezzo listino unitario (€)</label>
+        <input type="number" id="pkg-form-listino" min="0" step="0.01" placeholder="0,00" oninput="pkgFormCalcOfferta()">
+      </div>
       <div class="row2" style="margin-top:4px">
-        <div class="fg">
-          <label>Prezzo listino unitario (€)</label>
-          <input type="number" id="pkg-form-listino" min="0" step="0.01" placeholder="0,00" oninput="pkgOnListinoChange()">
+        <div class="fg" style="margin-bottom:0">
+          <label>Sconto (%)</label>
+          <input type="number" id="pkg-form-sconto" min="0" max="100" step="0.1" value="0"
+            style="font-size:16px;font-weight:700"
+            oninput="pkgFormCalcOfferta()">
         </div>
-        <div class="fg">
-          <label>Volume/mese (pz)</label>
-          <input type="number" id="pkg-form-volume" min="1" value="1" step="1">
+        <div class="fg" style="margin-bottom:0">
+          <label>Volume / mese (pz)</label>
+          <input type="number" id="pkg-form-volume" min="1" value="1" step="1" oninput="pkgFormCalcOfferta()">
         </div>
       </div>
-      <div class="fg">
-        <label>Prezzo offerta unitario (€)</label>
-        <input type="number" id="pkg-form-offerta" min="0" step="0.01" placeholder="0,00"
-          style="font-size:16px;font-weight:700"
-          oninput="pkgFormUpdateSconto()">
-        <div id="pkg-form-sconto-info" style="font-size:12px;margin-top:5px;font-weight:600;min-height:18px"></div>
-      </div>
-      <button class="btn btn-teal btn-full" onclick="pkgAddRiga()">+ Aggiungi riga</button>
+      <div id="pkg-form-calc-out" style="margin-top:8px;padding:8px 12px;background:var(--g100);border-radius:6px;font-size:13px;min-height:36px;display:none"></div>
+      <button class="btn btn-teal btn-full" style="margin-top:10px" onclick="pkgAddRiga()">+ Aggiungi riga</button>
     </div>
   </div>`;
 }
@@ -1826,28 +1811,25 @@ function pkgRenderAddForm(){
    PACCHETTI — EVENT HANDLERS FORM
 ===================================================================== */
 function pkgOnTypeChange(){
-  // re-renderizza solo la parte dyn dopo aver cambiato il tipo
-  // per semplicità ri-renderizza tutto il form
   renderPkgEdit();
-  // ripristina il focus sulla select tipo dopo il re-render
-  // (non strettamente necessario)
 }
 
 function pkgOnCatChange(){
-  const ct = document.getElementById('pkg-form-type')?.value || 'studi';
+  const ct    = document.getElementById('pkg-form-type')?.value || 'studi';
   const catId = document.getElementById('pkg-form-cat')?.value;
-  const cats = pkgGetCatsForType(ct);
-  const cat = cats.find(c=>c.id===catId);
-  const dyn = document.getElementById('pkg-form-dyn');
+  const cats  = pkgGetCatsForType(ct);
+  const cat   = cats.find(c=>c.id===catId);
+  const dyn   = document.getElementById('pkg-form-dyn');
   if(!cat||!dyn) return;
 
-  // Reset prezzi e info sconto prima di calcolare il nuovo baseline
+  // Reset sconto e output al cambio categoria
+  const scontoEl  = document.getElementById('pkg-form-sconto');
   const listinoEl = document.getElementById('pkg-form-listino');
-  const offertaEl = document.getElementById('pkg-form-offerta');
-  const infoEl    = document.getElementById('pkg-form-sconto-info');
+  const outEl     = document.getElementById('pkg-form-calc-out');
+  const wrapEl    = document.getElementById('pkg-form-listino-wrap');
+  if(scontoEl)  scontoEl.value = '0';
   if(listinoEl) listinoEl.value = '';
-  if(offertaEl) offertaEl.value = '';
-  if(infoEl)    infoEl.textContent = '';
+  if(outEl)     { outEl.textContent=''; outEl.style.display='none'; }
 
   let dynHtml = '';
 
@@ -1866,7 +1848,9 @@ function pkgOnCatChange(){
 
   dyn.innerHTML = dynHtml;
 
-  // auto-calcola prezzo se possibile
+  // Mostra campo listino manuale solo se la cat non ha auto-price
+  if(wrapEl) wrapEl.style.display = pkgCatHasAutoPrice(cat) ? 'none' : '';
+
   pkgAutoPrice();
 }
 
@@ -1878,103 +1862,81 @@ function pkgSelectPill(el){
 }
 
 function pkgAutoPrice(){
-  const ct = document.getElementById('pkg-form-type')?.value || 'studi';
+  const ct    = document.getElementById('pkg-form-type')?.value || 'studi';
   const catId = document.getElementById('pkg-form-cat')?.value;
-  const cats = pkgGetCatsForType(ct);
-  const cat = cats.find(c=>c.id===catId);
+  const cats  = pkgGetCatsForType(ct);
+  const cat   = cats.find(c=>c.id===catId);
   if(!cat) return;
 
   const listinoEl = document.getElementById('pkg-form-listino');
-  const offertaEl = document.getElementById('pkg-form-offerta');
 
   if(pkgCatHasAutoPrice(cat)){
-    const modEl = document.querySelector('#pkg-pills-mod .pill.on');
+    const modEl  = document.querySelector('#pkg-pills-mod .pill.on');
     const modVal = modEl ? modEl.dataset.val : (cat.mod ? cat.mod[0] : '');
-    const matEl = document.getElementById('pkg-form-mat');
-    const matNome = matEl ? matEl.value : (cat.mat ? cat.mat[0].nome : '');
+    const matEl  = document.getElementById('pkg-form-mat');
+    const matNome= matEl ? matEl.value : (cat.mat ? cat.mat[0].nome : '');
     const prezzo = pkgCalcListino(cat, modVal, matNome);
-    // Listino: auto-calcolato, non editabile
     if(listinoEl){ listinoEl.value = prezzo.toFixed(2); listinoEl.readOnly = true; }
-    // Offerta: pre-compilata con il listino, MA sempre editabile dall'utente
-    if(offertaEl){ offertaEl.value = prezzo.toFixed(2); offertaEl.readOnly = false; }
-    pkgFormUpdateSconto();
   } else {
-    // Categoria a prezzo manuale: entrambi i campi editabili
     if(listinoEl){ listinoEl.readOnly = false; }
-    if(offertaEl){ offertaEl.readOnly = false; }
   }
+  pkgFormCalcOfferta();
 }
 
-function pkgOnListinoChange(){
-  // Per categorie a prezzo manuale: sincronizza offerta al listino
-  // solo se offerta è ancora vuota (l'utente non ha ancora inserito nulla)
+/* Calcola prezzo offerta in tempo reale e mostra il riepilogo nel form */
+function pkgFormCalcOfferta(){
   const listinoEl = document.getElementById('pkg-form-listino');
-  const offertaEl = document.getElementById('pkg-form-offerta');
-  if(listinoEl && offertaEl && !offertaEl.value){
-    offertaEl.value = listinoEl.value;
-  }
-  pkgFormUpdateSconto();
-}
-
-function pkgFormUpdateSconto(){
-  const listinoEl = document.getElementById('pkg-form-listino');
-  const offertaEl = document.getElementById('pkg-form-offerta');
-  const infoEl    = document.getElementById('pkg-form-sconto-info');
-  if(!listinoEl||!offertaEl||!infoEl) return;
+  const scontoEl  = document.getElementById('pkg-form-sconto');
+  const volEl     = document.getElementById('pkg-form-volume');
+  const outEl     = document.getElementById('pkg-form-calc-out');
+  if(!listinoEl||!scontoEl||!outEl) return;
   const list = parseFloat(listinoEl.value)||0;
-  const off  = parseFloat(offertaEl.value)||0;
-  if(list<=0||off<=0){ infoEl.textContent=''; return; }
-  const sc = (1 - off/list)*100;
-  if(sc < 0){
-    infoEl.style.color='var(--red)';
-    infoEl.textContent='\u26a0 Prezzo offerta superiore al listino';
-  } else if(sc < 0.05){
-    infoEl.style.color='var(--g500)';
-    infoEl.textContent='Nessuno sconto applicato';
-  } else {
-    const color = sc > P.soglia ? 'var(--red)' : sc > P.soglia-5 ? '#92400e' : 'var(--teal-d)';
-    infoEl.style.color = color;
-    infoEl.textContent = 'Sconto: '+sc.toFixed(1)+'%';
-  }
+  const sc   = parseFloat(scontoEl.value)||0;
+  const vol  = Math.max(1, parseInt(volEl?.value)||1);
+  if(list<=0){ outEl.textContent=''; outEl.style.display='none'; return; }
+  const off = list * (1 - sc/100);
+  const tot = off * vol;
+  outEl.style.display = '';
+  outEl.innerHTML =
+    `P. Listino: <strong>${eur(list)}</strong> &nbsp;&mdash;&nbsp; `+
+    `Sconto: <strong>${sc.toFixed(1)}%</strong> &nbsp;&mdash;&nbsp; `+
+    `P. Offerta: <strong style="color:var(--teal-d)">${eur(off)}</strong> &nbsp;&mdash;&nbsp; `+
+    `Tot. mensile: <strong>${eur(tot)}</strong>`;
 }
 
 /* =====================================================================
    PACCHETTI — AGGIUNGI RIGA
 ===================================================================== */
 function pkgAddRiga(){
-  const ct = document.getElementById('pkg-form-type')?.value || 'studi';
+  const ct    = document.getElementById('pkg-form-type')?.value || 'studi';
   const catId = document.getElementById('pkg-form-cat')?.value;
-  const cats = pkgGetCatsForType(ct);
-  const cat = cats.find(c=>c.id===catId);
+  const cats  = pkgGetCatsForType(ct);
+  const cat   = cats.find(c=>c.id===catId);
 
   if(!cat){ alert('Seleziona una categoria.'); return; }
 
-  const modEl = document.querySelector('#pkg-pills-mod .pill.on');
-  const modVal = modEl ? modEl.dataset.val : '';
-  const matEl = document.getElementById('pkg-form-mat');
+  const modEl   = document.querySelector('#pkg-pills-mod .pill.on');
+  const modVal  = modEl ? modEl.dataset.val : '';
+  const matEl   = document.getElementById('pkg-form-mat');
   const matNome = matEl ? matEl.value : '';
   const listino = parseFloat(document.getElementById('pkg-form-listino')?.value)||0;
-  const volume = Math.max(1, parseInt(document.getElementById('pkg-form-volume')?.value)||1);
-  const offerta = parseFloat(document.getElementById('pkg-form-offerta')?.value)||listino;
+  const sconto  = parseFloat(document.getElementById('pkg-form-sconto')?.value)||0;
+  const volume  = Math.max(1, parseInt(document.getElementById('pkg-form-volume')?.value)||1);
+  const offerta = listino * (1 - sconto/100);
 
   if(listino<=0){ alert('Inserisci un prezzo listino valido (> 0).'); return; }
 
-  // Costruisce la descrizione della riga
   let desc = cat.nome;
-  if(modVal) desc += ` — ${modVal}`;
-  if(matNome) desc += ` — ${matNome}`;
+  if(modVal)  desc += ` \u2014 ${modVal}`;
+  if(matNome) desc += ` \u2014 ${matNome}`;
 
   const riga = {
     id: uid(),
     clientType: ct,
     catId: cat.id,
     catNome: cat.nome,
-    modVal: modVal,
-    matNome: matNome,
-    desc: desc,
-    listino: listino,
-    volume: volume,
-    offerta: offerta,
+    modVal, matNome, desc,
+    listino, sconto, offerta, volume,
   };
 
   P.pkg.righe.push(riga);
@@ -1991,32 +1953,27 @@ function pkgRemoveRiga(id){
   updateStickyPkg();
 }
 
-function pkgUpdateOfferta(id, val){
-  const r = P.pkg.righe.find(r=>r.id===id);
-  if(r){ r.offerta = parseFloat(val)||0; renderPkgSummaryOnly(); updateStickyPkg(); }
-}
-
-function pkgUpdateVolume(id, val){
-  const r = P.pkg.righe.find(r=>r.id===id);
-  if(r){ r.volume = Math.max(1, parseInt(val)||1); renderPkgSummaryOnly(); updateStickyPkg(); }
-}
-
-// Aggiorna offerta inline senza re-render completo → il focus rimane nell'input
-function pkgUpdateOffertaInline(id, val, scontoId, dotId, lblId){
+/* Aggiorna sconto inline — nessun re-render completo, focus resta nell'input */
+function pkgUpdateScontoInline(id, val, offId, totId){
   const r = P.pkg.righe.find(r=>r.id===id);
   if(!r) return;
-  r.offerta = parseFloat(val)||0;
-  const disc = rigaSconto(r);
-  const sfClass = rigaSemaforoClass(r);
-  const dotColor = sfClass==='sf-green'?'#22c55e':sfClass==='sf-yellow'?'#eab308':'#ef4444';
-  const sfTextClass = sfClass==='sf-green'?'sf-label-green':sfClass==='sf-yellow'?'sf-label-yellow':'sf-label-red';
-  const sfLabelTxt = sfClass==='sf-green'?'Sostenibile':sfClass==='sf-yellow'?'Attenzione':'Non sostenibile';
-  const scontoEl = document.getElementById(scontoId);
-  const dotEl    = document.getElementById(dotId);
-  const lblEl    = document.getElementById(lblId);
-  if(scontoEl) scontoEl.textContent = disc.toFixed(1)+'% sconto';
-  if(dotEl)    dotEl.style.background = dotColor;
-  if(lblEl){   lblEl.className = sfTextClass; lblEl.textContent = sfLabelTxt; }
+  r.sconto  = parseFloat(val)||0;
+  r.offerta = r.listino * (1 - r.sconto/100);
+  const offEl = document.getElementById(offId);
+  const totEl = document.getElementById(totId);
+  if(offEl) offEl.textContent = eur(r.offerta);
+  if(totEl) totEl.textContent = eur(r.offerta * r.volume);
+  renderPkgSummaryOnly();
+  updateStickyPkg();
+}
+
+/* Aggiorna volume inline */
+function pkgUpdateVolumeInline(id, val, totId){
+  const r = P.pkg.righe.find(r=>r.id===id);
+  if(!r) return;
+  r.volume = Math.max(1, parseInt(val)||1);
+  const totEl = document.getElementById(totId);
+  if(totEl) totEl.textContent = eur(r.offerta * r.volume);
   renderPkgSummaryOnly();
   updateStickyPkg();
 }
@@ -2057,38 +2014,14 @@ function renderPkgEdit(){
     </div>
   </div>`;
 
-  // Card soglia sostenibilità
-  const cardSoglia = `
-  <div class="card">
-    <div class="card-hd"><h3>Soglia sostenibilit&agrave;</h3></div>
-    <div class="card-bd">
-      <div class="row2" style="align-items:end">
-        <div class="fg" style="margin-bottom:0">
-          <label>Sconto massimo sostenibile (%)</label>
-          <input type="number" id="pkg-soglia" min="0" max="100" step="1" value="${P.soglia}" placeholder="20">
-        </div>
-        <button class="btn btn-teal" onclick="pkgApplySoglia()">Applica</button>
-      </div>
-      <p class="note" style="margin-top:8px">
-        Le righe con sconto &le; <strong>${P.soglia-5}%</strong> sono sostenibili (verde).
-        Tra <strong>${P.soglia-5}%</strong> e <strong>${P.soglia}%</strong> sono in attenzione (giallo).
-        Oltre <strong>${P.soglia}%</strong> non sono sostenibili (rosso).
-      </p>
-    </div>
-  </div>`;
-
-  // Card righe pacchetto — layout verticale a card, tutto visibile senza scorrere
+  // Card righe pacchetto
   let righeHtml = '';
   if(P.pkg.righe.length === 0){
     righeHtml = `<div class="empty" style="padding:24px"><p>Nessuna riga. Aggiungi voci usando il modulo qui sotto.</p></div>`;
   } else {
     righeHtml = P.pkg.righe.map((r, idx)=>{
-      const sfClass = rigaSemaforoClass(r);
-      const sfTextClass = sfClass==='sf-green'?'sf-label-green':sfClass==='sf-yellow'?'sf-label-yellow':'sf-label-red';
-      const sfLabel = sfClass==='sf-green'?'Sostenibile':sfClass==='sf-yellow'?'Attenzione':'Non sostenibile';
-      const dotColor = sfClass==='sf-green'?'#22c55e':sfClass==='sf-yellow'?'#eab308':'#ef4444';
-      const disc = rigaSconto(r);
-      const prezzoMin = rigaPrezzoMin(r);
+      const offId = `off-${r.id}`;
+      const totId = `tot-${r.id}`;
       return `
       <div class="pkg-riga-card">
         <div class="pkg-riga-hd">
@@ -2102,23 +2035,21 @@ function renderPkgEdit(){
         <div class="pkg-riga-listino">P. Listino: <strong>${eur(r.listino)}</strong></div>
         <div class="row2" style="margin-bottom:4px">
           <div class="fg" style="margin-bottom:0">
-            <label>Prezzo offerta (€)</label>
-            <input type="number" min="0" step="0.01" value="${r.offerta.toFixed(2)}"
+            <label>Sconto (%)</label>
+            <input type="number" min="0" max="100" step="0.1" value="${(r.sconto||0).toFixed(1)}"
               style="font-size:16px;font-weight:700"
-              oninput="pkgUpdateOffertaInline('${r.id}',this.value,'sconto-${r.id}','sfdot-${r.id}','sflbl-${r.id}')">
+              oninput="pkgUpdateScontoInline('${r.id}',this.value,'${offId}','${totId}')">
           </div>
           <div class="fg" style="margin-bottom:0">
             <label>Volume / mese</label>
             <input type="number" min="1" step="1" value="${r.volume}"
-              oninput="pkgUpdateVolume('${r.id}',this.value)">
+              oninput="pkgUpdateVolumeInline('${r.id}',this.value,'${totId}')">
           </div>
         </div>
-        <div class="pkg-riga-semafororow">
-          <span class="sf-dot" id="sfdot-${r.id}" style="background:${dotColor}"></span>
-          <span class="pkg-riga-sconto" id="sconto-${r.id}">${disc.toFixed(1)}%&nbsp;sconto</span>
-          <span class="${sfTextClass}" id="sflbl-${r.id}">${sfLabel}</span>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding-top:8px;border-top:1px solid var(--g100)">
+          <span>P. Offerta: <strong id="${offId}">${eur(r.offerta)}</strong></span>
+          <span>Tot. mensile: <strong id="${totId}">${eur(r.offerta*r.volume)}</strong></span>
         </div>
-        <div class="pkg-riga-minprice">Prezzo minimo consigliato: <strong>${eur(prezzoMin)}</strong></div>
       </div>`;
     }).join('');
   }
@@ -2151,12 +2082,11 @@ function renderPkgEdit(){
     <button class="btn btn-gray" onclick="exportPkgPdf()">&#9113;&nbsp; Esporta Offerta PDF</button>
   </div>`;
 
-  ev.innerHTML = cardIntestazione + cardSoglia + cardRighe + cardAggiungi + cardRiepilogo + cardAzioni;
+  ev.innerHTML = cardIntestazione + cardRighe + cardAggiungi + cardRiepilogo + cardAzioni;
 }
 
 function buildPkgSummaryHtml(){
   const s = pkgSummary();
-  const scontoClass = s.scontoMedio > P.soglia ? 'warn' : (s.scontoMedio > P.soglia-5 ? '' : '');
   return `
     <div class="card-hd"><h3>Riepilogo pacchetto</h3></div>
     <div class="card-bd">
@@ -2167,24 +2097,14 @@ function buildPkgSummaryHtml(){
         </div>
         <div class="pkg-sum-card highlight">
           <div class="val">${eur(s.totAnnuo)}</div>
-          <div class="lbl">Totale annuo stimato (×12)</div>
+          <div class="lbl">Totale annuo stimato (&times;12)</div>
         </div>
-        <div class="pkg-sum-card ${scontoClass}">
+        <div class="pkg-sum-card">
           <div class="val">${s.scontoMedio.toFixed(1)}%</div>
-          <div class="lbl">Sconto medio${s.scontoMedio>P.soglia?'&nbsp;&#9888; Supera soglia':''}</div>
+          <div class="lbl">Sconto medio</div>
         </div>
       </div>
     </div>`;
-}
-
-/* =====================================================================
-   PACCHETTI — SOGLIA
-===================================================================== */
-function pkgApplySoglia(){
-  const v = parseInt(document.getElementById('pkg-soglia')?.value)||20;
-  P.soglia = Math.max(0, Math.min(100, v));
-  renderPkgEdit();
-  updateStickyPkg();
 }
 
 /* =====================================================================
@@ -2197,7 +2117,6 @@ function pkgSave(){
   const idx = hist.findIndex(h=>h.id===P.pkg.id);
   const snap = JSON.parse(JSON.stringify(P.pkg));
   snap.savedAt = new Date().toLocaleDateString('it-IT');
-  snap.soglia = P.soglia;
   if(idx>=0) hist[idx]=snap; else hist.unshift(snap);
   if(hist.length>20) hist.length=20;
   try{ localStorage.setItem(PKG_LS, JSON.stringify(hist)); }catch(e){}
@@ -2226,7 +2145,14 @@ function pkgLoadPkg(id){
     if(!confirm('Caricare questa offerta? Le modifiche non salvate andranno perse.')){ return; }
   }
   P.pkg = JSON.parse(JSON.stringify(h));
-  if(h.soglia !== undefined) P.soglia = h.soglia;
+  // Backward compat: righe salvate con vecchio schema (offerta, no sconto)
+  P.pkg.righe = P.pkg.righe.map(r=>{
+    if(r.sconto === undefined){
+      r.sconto = r.listino > 0 ? parseFloat(((1 - r.offerta/r.listino)*100).toFixed(1)) : 0;
+    }
+    r.offerta = r.listino * (1 - r.sconto/100);
+    return r;
+  });
   pkgSwitchView('edit');
   renderPkgEdit();
   updateStickyPkg();
@@ -2263,20 +2189,12 @@ function renderPkgHistory(){
   const items = hist.map(h=>{
     const rs = h.righe||[];
     const totMens = rs.reduce((s,r)=>s+r.offerta*r.volume,0);
-    // calcola il semaforo peggiore
-    let worst = 'sf-green';
-    rs.forEach(r=>{
-      const sc = rigaSemaforoClass(r);
-      if(sc==='sf-red') worst='sf-red';
-      else if(sc==='sf-yellow'&&worst!=='sf-red') worst='sf-yellow';
-    });
-    const dotColor = worst==='sf-green'?'#22c55e':worst==='sf-yellow'?'#eab308':'#ef4444';
+    const scontoMedio = rs.length ? rs.reduce((s,r)=>s+(r.sconto||0),0)/rs.length : 0;
     return `
     <div class="pkg-hist-item">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="width:12px;height:12px;border-radius:50%;background:${dotColor};flex-shrink:0;display:inline-block"></span>
             <strong style="font-size:14px">${escHtml(h.nome||'(senza nome)')}</strong>
             ${h.cliente?`<span style="font-size:12px;color:var(--g500)">${escHtml(h.cliente)}</span>`:''}
           </div>
@@ -2347,31 +2265,31 @@ function exportPkgPdf(){
   }
   y+=2; hline(y,DARK); y+=5;
 
-  // TABLE HEADER — colonne: Lavorazione | P.Listino | P.Offerta | Sconto% | Vol. | Tot.Mensile
+  // TABLE HEADER — colonne: Lavorazione | P.Listino | Sconto% | P.Offerta | Vol. | Tot.Mensile
   const C2={
-    desc:   {x:ML+2,   w:52},
-    list:   {x:ML+55,  w:24},
-    off:    {x:ML+80,  w:24},
-    disc:   {x:ML+105, w:16},
-    vol:    {x:ML+122, w:14},
-    tot:    {x:ML+137, w:cW-139}
+    desc: {x:ML+2,   w:54},
+    list: {x:ML+58,  w:22},
+    disc: {x:ML+82,  w:17},
+    off:  {x:ML+101, w:23},
+    vol:  {x:ML+126, w:12},
+    tot:  {x:ML+140, w:cW-142}
   };
   fill(ML,y,cW,7,LIGHT);
   sf('bold',7); tc(GRAY);
-  doc.text('Lavorazione', C2.desc.x, y+5);
-  doc.text('P. Listino',  C2.list.x+C2.list.w, y+5, {align:'right'});
-  doc.text('P. Offerta',  C2.off.x+C2.off.w,   y+5, {align:'right'});
-  doc.text('Sconto',      C2.disc.x+C2.disc.w,  y+5, {align:'right'});
-  doc.text('Vol.',        C2.vol.x+C2.vol.w,    y+5, {align:'right'});
-  doc.text('Tot. Mens.',  C2.tot.x+C2.tot.w,    y+5, {align:'right'});
+  doc.text('Lavorazione', C2.desc.x,            y+5);
+  doc.text('P. Listino',  C2.list.x+C2.list.w,  y+5, {align:'right'});
+  doc.text('Sconto %',    C2.disc.x+C2.disc.w,  y+5, {align:'right'});
+  doc.text('P. Offerta',  C2.off.x+C2.off.w,    y+5, {align:'right'});
+  doc.text('Vol.',        C2.vol.x+C2.vol.w,     y+5, {align:'right'});
+  doc.text('Tot. Mens.',  C2.tot.x+C2.tot.w,     y+5, {align:'right'});
   y+=8;
 
   // TABLE ROWS
   let grandTotMens = 0;
   P.pkg.righe.forEach((r,i)=>{
-    newPageIfNeeded(10);
-    const totRiga = r.offerta * r.volume;
-    const disc = r.listino>0 ? (1 - r.offerta/r.listino)*100 : 0;
+    const sc      = r.sconto||0;
+    const offerta = r.listino * (1 - sc/100);
+    const totRiga = offerta * r.volume;
     grandTotMens += totRiga;
     const lines = doc.splitTextToSize(r.desc, C2.desc.w-2);
     const rh = Math.max(8, lines.length*4.5+2);
@@ -2379,25 +2297,27 @@ function exportPkgPdf(){
     if(i%2===0) fill(ML,y,cW,rh,[249,250,251]);
     sf('normal',7); tc(DARK);
     doc.text(lines, C2.desc.x, y+5);
-    tc(GRAY);
-    doc.text(eur(r.listino),        C2.list.x+C2.list.w, y+5, {align:'right'});
-    tc(DARK);
+    // P. Listino (grigio)
+    tc(GRAY); sf('normal',7);
+    doc.text(eur(r.listino), C2.list.x+C2.list.w, y+5, {align:'right'});
+    // Sconto % — mostra — se 0
     sf('bold',7);
-    doc.text(eur(r.offerta),        C2.off.x+C2.off.w,   y+5, {align:'right'});
-    // sconto colorato (mostra — se nessuno sconto)
-    sf('bold',7);
-    if(disc < 0.05){
+    if(sc < 0.05){
       tc(GRAY);
       doc.text('\u2014', C2.disc.x+C2.disc.w, y+5, {align:'right'});
     } else {
-      const discColor = disc>P.soglia?[185,28,28]:disc>P.soglia-5?[133,77,14]:[22,101,52];
-      tc(discColor);
-      doc.text(disc.toFixed(1)+'%', C2.disc.x+C2.disc.w, y+5, {align:'right'});
+      tc([22,101,52]);
+      doc.text(sc.toFixed(1)+'%', C2.disc.x+C2.disc.w, y+5, {align:'right'});
     }
+    // P. Offerta (bold, dark)
+    sf('bold',7); tc(DARK);
+    doc.text(eur(offerta), C2.off.x+C2.off.w, y+5, {align:'right'});
+    // Vol.
     sf('normal',7); tc(DARK);
-    doc.text(String(r.volume),      C2.vol.x+C2.vol.w,   y+5, {align:'right'});
+    doc.text(String(r.volume), C2.vol.x+C2.vol.w, y+5, {align:'right'});
+    // Tot. mensile
     sf('bold',7);
-    doc.text(eur(totRiga),          C2.tot.x+C2.tot.w,   y+5, {align:'right'});
+    doc.text(eur(totRiga), C2.tot.x+C2.tot.w, y+5, {align:'right'});
     y+=rh;
   });
 
