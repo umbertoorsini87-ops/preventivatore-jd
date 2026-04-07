@@ -427,7 +427,7 @@ table.pkg-table tr:last-child td{border-bottom:none}
         <div id="quote-body"></div>
       </div>
       <div class="disclaimer" style="background:#fff7ed;color:#c2410c;font-style:normal;font-weight:600;border-top:1px solid #fed7aa">
-        &#9888; Componentistica implantare esclusa &mdash; fatturata separatamente
+        IMPORTANTE: Prezzi riferiti alla sola lavorazione &mdash; progettazione, componentistica implantare e altri servizi aggiuntivi esclusi
       </div>
     </div>
 
@@ -534,7 +534,7 @@ function forceUpdate(){
 /* =====================================================================
    VERSIONING
 ===================================================================== */
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.6.0";
 const APP_DATE    = "2026-04-07";
 
 /* =====================================================================
@@ -1533,20 +1533,16 @@ function handlePrint(){
   trow('TOTALE FINALE',eur(grand),true);
 
   // ── DISCLAIMER COMPONENTISTICA ──
-  const impTxt1 = 'I prezzi indicati nel pacchetto si riferiscono esclusivamente alla lavorazione selezionata. Non sono inclusi nell\'offerta scontata: progettazione, stampa modello prototipato, analoghi digitali, dima chirurgica, o qualsiasi altro servizio o componente aggiuntivo.';
-  const impTxt2 = 'La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 esclusa e verr\u00e0 fatturata separatamente.';
-  const impLines1 = doc.splitTextToSize(impTxt1, cW-8);
-  const impLines2 = doc.splitTextToSize(impTxt2, cW-8);
-  const impH = 7 + (impLines1.length + impLines2.length) * 3.8;
+  const impTxt = 'I prezzi indicati nel pacchetto si riferiscono esclusivamente alla lavorazione selezionata. Non sono inclusi nell\'offerta scontata: progettazione, stampa modello prototipato, analoghi digitali, dima chirurgica, componentistica implantare (monconi, viti, abutment ecc.) o qualsiasi altro servizio o componente aggiuntivo.';
+  const impLines = doc.splitTextToSize(impTxt, cW-8);
+  const impH = 7 + impLines.length * 3.8;
   newPageIfNeeded(impH+2);
   fill(ML,y,cW,impH,[255,247,237]);
   doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,impH,'S');
   sf('bold',8); doc.setTextColor(194,65,12);
-  doc.text('\u26a0 IMPORTANTE:',ML+3,y+5);
+  doc.text('IMPORTANTE:',ML+3,y+5);
   sf('normal',7.5); doc.setTextColor(194,65,12);
-  let iy = y+9;
-  doc.text(impLines1,ML+3,iy); iy += impLines1.length*3.8+1;
-  doc.text(impLines2,ML+3,iy);
+  doc.text(impLines,ML+3,y+9);
   y+=impH+2;
 
   // ── FOOTER ──
@@ -1705,7 +1701,7 @@ function pkgSummary(){
   const totOff  = rs.reduce((s,r)=>s+r.prezzoOfferta*r.volumeMese, 0);
   const totList = rs.reduce((s,r)=>s+r.prezzoListino*r.volumeMese, 0);
   const scontoMedio = rs.length ? rs.reduce((s,r)=>s+(r.scontoPerc||0),0)/rs.length : 0;
-  return { totMensile:totOff, totAnnuo:totOff*12, totListMensile:totList, scontoMedio };
+  return { totMensile:totOff, totListMensile:totList, scontoMedio };
 }
 
 /* =====================================================================
@@ -1814,7 +1810,7 @@ function pkgRenderAddForm(){
             oninput="pkgFormCalcOfferta()">
         </div>
         <div class="fg" style="margin-bottom:0">
-          <label>Volume / mese (pz)</label>
+          <label>Quantit&agrave;</label>
           <input type="number" id="pkg-form-volume" min="1" value="1" step="1" oninput="pkgFormCalcOfferta()">
         </div>
       </div>
@@ -2101,7 +2097,7 @@ function renderPkgEdit(){
               oninput="pkgUpdateScontoInline('${r.id}',this.value,'${offId}','${totId}')">
           </div>
           <div class="fg" style="margin-bottom:0">
-            <label>Volume / mese</label>
+            <label>Quantit&agrave;</label>
             <input type="number" min="1" step="1" value="${r.volumeMese}"
               oninput="pkgUpdateVolumeInline('${r.id}',this.value,'${totId}')">
           </div>
@@ -2150,14 +2146,10 @@ function buildPkgSummaryHtml(){
   return `
     <div class="card-hd"><h3>Riepilogo pacchetto</h3></div>
     <div class="card-bd">
-      <div class="pkg-summary" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="pkg-summary" style="grid-template-columns:1fr 1fr">
         <div class="pkg-sum-card highlight">
           <div class="val">${eur(s.totMensile)}</div>
           <div class="lbl">Totale mensile stimato</div>
-        </div>
-        <div class="pkg-sum-card highlight">
-          <div class="val">${eur(s.totAnnuo)}</div>
-          <div class="lbl">Totale annuo stimato (&times;12)</div>
         </div>
         <div class="pkg-sum-card">
           <div class="val">${s.scontoMedio.toFixed(1)}%</div>
@@ -2342,7 +2334,7 @@ function exportPkgPdf(){
   }
   y+=2; hline(y,DARK); y+=5;
 
-  // TABLE HEADER — colonne: Lavorazione | P.Listino | Sconto% | P.Offerta | Vol. | Tot.Mensile
+  // TABLE HEADER — colonne: Lavorazione | P.Listino | Sconto% | P.Offerta | Qtà | Tot.Mensile
   const C2={
     desc: {x:ML+2,   w:54},
     list: {x:ML+58,  w:22},
@@ -2357,7 +2349,7 @@ function exportPkgPdf(){
   doc.text('P. Listino',  C2.list.x+C2.list.w,  y+5, {align:'right'});
   doc.text('Sconto %',    C2.disc.x+C2.disc.w,  y+5, {align:'right'});
   doc.text('P. Offerta',  C2.off.x+C2.off.w,    y+5, {align:'right'});
-  doc.text('Vol.',        C2.vol.x+C2.vol.w,     y+5, {align:'right'});
+  doc.text('Qt\u00e0',    C2.vol.x+C2.vol.w,     y+5, {align:'right'});
   doc.text('Tot. Mens.',  C2.tot.x+C2.tot.w,     y+5, {align:'right'});
   y+=8;
 
@@ -2399,33 +2391,25 @@ function exportPkgPdf(){
   });
 
   // TOTALS
-  newPageIfNeeded(20); hline(y,DARK); y+=5;
+  newPageIfNeeded(14); hline(y,DARK); y+=5;
   const TX2 = ML + cW*0.5;
-  sf('bold',10); tc(DARK);
+  sf('bold',12); tc(TEAL);
   doc.text('Totale mensile stimato:', TX2, y);
   doc.text(eur(grandTotMens), W-MR, y, {align:'right'});
   y+=6;
-  sf('bold',12); tc(TEAL);
-  doc.text('Totale annuo stimato (\u00d712):', TX2, y);
-  doc.text(eur(grandTotMens*12), W-MR, y, {align:'right'});
-  y+=6;
 
   // DISCLAIMER COMPONENTISTICA
-  const pkgImpTxt1 = 'I prezzi indicati nel pacchetto si riferiscono esclusivamente alla lavorazione selezionata. Non sono inclusi nell\'offerta scontata: progettazione, stampa modello prototipato, analoghi digitali, dima chirurgica, o qualsiasi altro servizio o componente aggiuntivo.';
-  const pkgImpTxt2 = 'La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 esclusa e verr\u00e0 fatturata separatamente.';
-  const pkgImpLines1 = doc.splitTextToSize(pkgImpTxt1, cW-8);
-  const pkgImpLines2 = doc.splitTextToSize(pkgImpTxt2, cW-8);
-  const pkgImpH = 7 + (pkgImpLines1.length + pkgImpLines2.length) * 3.8;
+  const pkgImpTxt = 'I prezzi indicati nel pacchetto si riferiscono esclusivamente alla lavorazione selezionata. Non sono inclusi nell\'offerta scontata: progettazione, stampa modello prototipato, analoghi digitali, dima chirurgica, componentistica implantare (monconi, viti, abutment ecc.) o qualsiasi altro servizio o componente aggiuntivo.';
+  const pkgImpLines = doc.splitTextToSize(pkgImpTxt, cW-8);
+  const pkgImpH = 7 + pkgImpLines.length * 3.8;
   newPageIfNeeded(pkgImpH+6);
   y+=4;
   fill(ML,y,cW,pkgImpH,[255,247,237]);
   doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,pkgImpH,'S');
   sf('bold',8); doc.setTextColor(194,65,12);
-  doc.text('\u26a0 IMPORTANTE:',ML+3,y+5);
+  doc.text('IMPORTANTE:',ML+3,y+5);
   sf('normal',7.5); doc.setTextColor(194,65,12);
-  let pkgIy = y+9;
-  doc.text(pkgImpLines1,ML+3,pkgIy); pkgIy += pkgImpLines1.length*3.8+1;
-  doc.text(pkgImpLines2,ML+3,pkgIy);
+  doc.text(pkgImpLines,ML+3,y+9);
   y+=pkgImpH+2;
   hline(y); y+=5;
   sf('italic',7); tc(GRAY);

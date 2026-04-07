@@ -1,5 +1,5 @@
 /* JD Preventivatore — Service Worker v2.0 */
-const CACHE = 'jd-cache-v6.0';
+const CACHE = 'jd-cache-v7.0';
 const APP_ASSETS = [
   './index.html',
   './JD_Preventivatore_Studi.html',
