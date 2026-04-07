@@ -346,7 +346,7 @@ table.pkg-table tr:last-child td{border-bottom:none}
 <!-- TAB BAR -->
 <div class="tab-bar no-print">
   <button class="tab-btn active" id="tab-prev" onclick="switchTab('prev')">Preventivo</button>
-  <button class="tab-btn" id="tab-pkg" onclick="switchTab('pkg')">Pacchetti &amp; Offerte</button>
+  <button class="tab-btn" id="tab-pkg" onclick="switchTab('pkg')">Pacchetti e Offerte</button>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
@@ -534,15 +534,15 @@ function forceUpdate(){
 /* =====================================================================
    VERSIONING
 ===================================================================== */
-const APP_VERSION = "1.4.0";
-const APP_DATE    = "2026-04-06";
+const APP_VERSION = "1.5.0";
+const APP_DATE    = "2026-04-07";
 
 /* =====================================================================
    DATA — STUDI Rev.08
 ===================================================================== */
 const STUDI = [
   {
-    id:'s1', nome:'Corona/Ponte su Moncone Naturale', iva:0, giorni:'5-7',
+    id:'s1', nome:'Corona/Ponte su Moncone Naturale', iva:0, giorniD:'4-5', giorniA:'5-6',
     tipo:'std_el', mod:['Digitale','Analogica'],
     mat:[
       {nome:'Zirconia',d:70,a:90},
@@ -554,7 +554,7 @@ const STUDI = [
     ]
   },
   {
-    id:'s2', nome:'Corona/Ponte su Ti-Base', iva:0, giorni:'5-7',
+    id:'s2', nome:'Corona/Ponte su Ti-Base', iva:0, giorniD:'4-5', giorniA:'5-6',
     tipo:'std_el', mod:['Digitale','Analogica'],
     mat:[
       {nome:'Zirconia',d:70,a:90},
@@ -564,22 +564,22 @@ const STUDI = [
     ]
   },
   {
-    id:'s3', nome:'Corona/Ponte Avvitato', iva:0, giorni:'5-7',
+    id:'s3', nome:'Corona/Ponte Avvitato', iva:0, giorniD:'4', giorniA:'5',
     tipo:'std_el', mod:['Digitale','Analogica'],
     mat:[{nome:'Titanio Fresato + Composito',d:80,a:100}]
   },
   {
-    id:'s4', nome:'Full Arch Avvitata Diretta', iva:0, giorni:'10-14',
+    id:'s4', nome:'Full Arch Avvitata Diretta', iva:0, giorniD:'8', giorniA:'10',
     tipo:'std_arcata', mod:['Digitale','Analogica'],
     mat:[
       {nome:'Barra Titanio + Composito',d:850,a:900},
       {nome:'Barra Titanio + Zirconia',d:1150,a:1200},
     ]
   },
-  {id:'s5', nome:'Prova Jig', iva:22, giorni:'3-5', tipo:'prova_jig'},
+  {id:'s5', nome:'Prova Jig', iva:22, giorniD:'4', giorniA:'5', tipo:'prova_jig', mod:['Digitale','Analogica']},
   {id:'s6', nome:'Chirurgia Guidata', iva:22, giorni:null, tipo:'chirurgia'},
   {id:'s7', nome:'Chirurgia Guidata Zigomatica', iva:22, giorni:'7-10', tipo:'zigomatica'},
-  {id:'s8', nome:'Stampa 3D', iva:22, giorni:'2-3', tipo:'stampa3d'},
+  {id:'s8', nome:'Stampa 3D', iva:22, giorni:'2', tipo:'stampa3d'},
 ];
 
 const LAB = [
@@ -661,7 +661,7 @@ const STAMPA3D_VOCI = [
   {nome:'Modello emiarcata',prezzo:12},
   {nome:'Modello arcata + antagonista',prezzo:30},
   {nome:'Modello emiarcata + antagonista',prezzo:22},
-  {nome:'Progettazione modello arcata',prezzo:16},
+  {nome:'Progettazione modello arcata',prezzo:16,giorni:'1'},
   {nome:'DIMA senza boccole',prezzo:40},
   {nome:'Biomodello + segmentazione',prezzo:200},
 ];
@@ -1142,7 +1142,7 @@ function calcStampa3D(cat){
   const voce = STAMPA3D_VOCI[idx];
   const qty = safeInt(document.getElementById('inp-el')?.value,1);
   if(!voce) return {total:0,valid:false};
-  return {unit:voce.prezzo,qty,total:voce.prezzo*qty,desc:`Stampa 3D — ${voce.nome}`,valid:true};
+  return {unit:voce.prezzo,qty,total:voce.prezzo*qty,desc:`Stampa 3D — ${voce.nome}`,valid:true,giorniOverride:voce.giorni};
 }
 
 function calcProgLab(cat){
@@ -1194,6 +1194,16 @@ function addOrUpdate(){
   const r = calcPrice(cat);
   if(!r.valid){ alert(r.errMsg||'Dati non validi. Controlla i campi.'); return; }
 
+  let itemGiorni;
+  if(r.giorniOverride !== undefined){
+    itemGiorni = r.giorniOverride;
+  } else if(cat.giorniD !== undefined && cat.giorniA !== undefined){
+    const modSel = getPillVal('pills-mod');
+    itemGiorni = modSel==='Digitale' ? cat.giorniD : cat.giorniA;
+  } else {
+    itemGiorni = cat.giorni;
+  }
+
   const item = {
     id: S.editingId || uid(),
     catId: cat.id,
@@ -1202,7 +1212,7 @@ function addOrUpdate(){
     qty: r.qty,
     vatRate: cat.iva,
     total: r.total,
-    giorni: cat.giorni,
+    giorni: itemGiorni,
     disc: r.disc||0,
   };
 
@@ -1256,7 +1266,7 @@ function editItem(id){
 function quickAddModelloArcata(){
   S.items.push({
     id:uid(), catId:'s8', desc:'Stampa 3D — Modello Arcata',
-    unit:22, qty:1, vatRate:22, total:22, giorni:'2-3', disc:0
+    unit:22, qty:1, vatRate:22, total:22, giorni:'2', disc:0
   });
   renderQuote(); renderTotals();
 }
@@ -1268,7 +1278,7 @@ function quickAddGengiva(){
   if(isNaN(v)||v<0){ alert('Prezzo non valido.'); return; }
   S.items.push({
     id:uid(), catId:'s8', desc:'Stampa 3D — Gengiva',
-    unit:v, qty:1, vatRate:22, total:v, giorni:'2-3', disc:0
+    unit:v, qty:1, vatRate:22, total:v, giorni:'2', disc:0
   });
   renderQuote(); renderTotals();
 }
@@ -1523,14 +1533,21 @@ function handlePrint(){
   trow('TOTALE FINALE',eur(grand),true);
 
   // ── DISCLAIMER COMPONENTISTICA ──
-  newPageIfNeeded(16);
-  fill(ML,y,cW,14,[255,247,237]);
-  doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,14,'S');
+  const impTxt1 = 'I prezzi indicati nel pacchetto si riferiscono esclusivamente alla lavorazione selezionata. Non sono inclusi nell\'offerta scontata: progettazione, stampa modello prototipato, analoghi digitali, dima chirurgica, o qualsiasi altro servizio o componente aggiuntivo.';
+  const impTxt2 = 'La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 esclusa e verr\u00e0 fatturata separatamente.';
+  const impLines1 = doc.splitTextToSize(impTxt1, cW-8);
+  const impLines2 = doc.splitTextToSize(impTxt2, cW-8);
+  const impH = 7 + (impLines1.length + impLines2.length) * 3.8;
+  newPageIfNeeded(impH+2);
+  fill(ML,y,cW,impH,[255,247,237]);
+  doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,impH,'S');
   sf('bold',8); doc.setTextColor(194,65,12);
   doc.text('\u26a0 IMPORTANTE:',ML+3,y+5);
   sf('normal',7.5); doc.setTextColor(194,65,12);
-  doc.text('La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 ESCLUSA da tutti i prezzi indicati e verr\u00e0 fatturata separatamente.',ML+3,y+11);
-  y+=18;
+  let iy = y+9;
+  doc.text(impLines1,ML+3,iy); iy += impLines1.length*3.8+1;
+  doc.text(impLines2,ML+3,iy);
+  y+=impH+2;
 
   // ── FOOTER ──
   const discY=H-12;
@@ -1681,13 +1698,13 @@ const P = {
 /* =====================================================================
    PACCHETTI — CALCOLI
 ===================================================================== */
-function rigaOfferta(r){ return r.listino * (1 - (r.sconto||0)/100); }
+function rigaOfferta(r){ return r.prezzoListino * (1 - (r.scontoPerc||0)/100); }
 
 function pkgSummary(){
   const rs = P.pkg.righe;
-  const totOff  = rs.reduce((s,r)=>s+r.offerta*r.volume, 0);
-  const totList = rs.reduce((s,r)=>s+r.listino*r.volume, 0);
-  const scontoMedio = rs.length ? rs.reduce((s,r)=>s+(r.sconto||0),0)/rs.length : 0;
+  const totOff  = rs.reduce((s,r)=>s+r.prezzoOfferta*r.volumeMese, 0);
+  const totList = rs.reduce((s,r)=>s+r.prezzoListino*r.volumeMese, 0);
+  const scontoMedio = rs.length ? rs.reduce((s,r)=>s+(r.scontoPerc||0),0)/rs.length : 0;
   return { totMensile:totOff, totAnnuo:totOff*12, totListMensile:totList, scontoMedio };
 }
 
@@ -1808,6 +1825,49 @@ function pkgRenderAddForm(){
 }
 
 /* =====================================================================
+   PACCHETTI — RESTORE FORM FROM RIGA
+   Ripopola il form "Aggiungi riga" con i valori di una riga esistente
+===================================================================== */
+function pkgRestoreFormFromRiga(r){
+  // Set listino type
+  const typeEl = document.getElementById('pkg-form-type');
+  if(typeEl && r.listino){ typeEl.value = r.listino; }
+
+  // Rebuild category list for the selected type and set category
+  const ct = typeEl ? typeEl.value : 'studi';
+  const cats = pkgGetCatsForType(ct);
+  const catEl = document.getElementById('pkg-form-cat');
+  if(catEl && r.categoriaId){
+    catEl.value = r.categoriaId;
+    // Trigger dynamic form (mod pills, mat select)
+    pkgOnCatChange();
+  }
+
+  // Set modalita pill
+  if(r.modalita){
+    const pills = document.querySelectorAll('#pkg-pills-mod .pill');
+    pills.forEach(p=>{
+      p.classList.toggle('on', p.dataset.val===r.modalita);
+    });
+  }
+
+  // Set materiale select
+  const matEl = document.getElementById('pkg-form-mat');
+  if(matEl && r.materialeNome){ matEl.value = r.materialeNome; }
+
+  // Update listino price after mod/mat are set
+  pkgAutoPrice();
+
+  // Set sconto and volume
+  const scontoEl = document.getElementById('pkg-form-sconto');
+  const volEl    = document.getElementById('pkg-form-volume');
+  if(scontoEl) scontoEl.value = (r.scontoPerc||0).toFixed(1);
+  if(volEl)    volEl.value    = r.volumeMese||1;
+
+  pkgFormCalcOfferta();
+}
+
+/* =====================================================================
    PACCHETTI — EVENT HANDLERS FORM
 ===================================================================== */
 function pkgOnTypeChange(){
@@ -1915,28 +1975,28 @@ function pkgAddRiga(){
 
   if(!cat){ alert('Seleziona una categoria.'); return; }
 
-  const modEl   = document.querySelector('#pkg-pills-mod .pill.on');
-  const modVal  = modEl ? modEl.dataset.val : '';
-  const matEl   = document.getElementById('pkg-form-mat');
-  const matNome = matEl ? matEl.value : '';
-  const listino = parseFloat(document.getElementById('pkg-form-listino')?.value)||0;
-  const sconto  = parseFloat(document.getElementById('pkg-form-sconto')?.value)||0;
-  const volume  = Math.max(1, parseInt(document.getElementById('pkg-form-volume')?.value)||1);
-  const offerta = listino * (1 - sconto/100);
+  const modEl        = document.querySelector('#pkg-pills-mod .pill.on');
+  const modalita     = modEl ? modEl.dataset.val : '';
+  const matEl        = document.getElementById('pkg-form-mat');
+  const materialeNome= matEl ? matEl.value : '';
+  const prezzoListino= parseFloat(document.getElementById('pkg-form-listino')?.value)||0;
+  const scontoPerc   = parseFloat(document.getElementById('pkg-form-sconto')?.value)||0;
+  const volumeMese   = Math.max(1, parseInt(document.getElementById('pkg-form-volume')?.value)||1);
+  const prezzoOfferta= prezzoListino * (1 - scontoPerc/100);
 
-  if(listino<=0){ alert('Inserisci un prezzo listino valido (> 0).'); return; }
+  if(prezzoListino<=0){ alert('Inserisci un prezzo listino valido (> 0).'); return; }
 
   let desc = cat.nome;
-  if(modVal)  desc += ` \u2014 ${modVal}`;
-  if(matNome) desc += ` \u2014 ${matNome}`;
+  if(modalita)      desc += ` \u2014 ${modalita}`;
+  if(materialeNome) desc += ` \u2014 ${materialeNome}`;
 
   const riga = {
     id: uid(),
-    clientType: ct,
-    catId: cat.id,
+    listino: ct,
+    categoriaId: cat.id,
     catNome: cat.nome,
-    modVal, matNome, desc,
-    listino, sconto, offerta, volume,
+    modalita, materialeNome, desc,
+    prezzoListino, scontoPerc, prezzoOfferta, volumeMese,
   };
 
   P.pkg.righe.push(riga);
@@ -1957,12 +2017,12 @@ function pkgRemoveRiga(id){
 function pkgUpdateScontoInline(id, val, offId, totId){
   const r = P.pkg.righe.find(r=>r.id===id);
   if(!r) return;
-  r.sconto  = parseFloat(val)||0;
-  r.offerta = r.listino * (1 - r.sconto/100);
+  r.scontoPerc    = parseFloat(val)||0;
+  r.prezzoOfferta = r.prezzoListino * (1 - r.scontoPerc/100);
   const offEl = document.getElementById(offId);
   const totEl = document.getElementById(totId);
-  if(offEl) offEl.textContent = eur(r.offerta);
-  if(totEl) totEl.textContent = eur(r.offerta * r.volume);
+  if(offEl) offEl.textContent = eur(r.prezzoOfferta);
+  if(totEl) totEl.textContent = eur(r.prezzoOfferta * r.volumeMese);
   renderPkgSummaryOnly();
   updateStickyPkg();
 }
@@ -1971,9 +2031,9 @@ function pkgUpdateScontoInline(id, val, offId, totId){
 function pkgUpdateVolumeInline(id, val, totId){
   const r = P.pkg.righe.find(r=>r.id===id);
   if(!r) return;
-  r.volume = Math.max(1, parseInt(val)||1);
+  r.volumeMese = Math.max(1, parseInt(val)||1);
   const totEl = document.getElementById(totId);
-  if(totEl) totEl.textContent = eur(r.offerta * r.volume);
+  if(totEl) totEl.textContent = eur(r.prezzoOfferta * r.volumeMese);
   renderPkgSummaryOnly();
   updateStickyPkg();
 }
@@ -2028,27 +2088,27 @@ function renderPkgEdit(){
           <div>
             <span class="pkg-riga-num">#${idx+1}</span>
             <strong class="pkg-riga-desc">${escHtml(r.desc)}</strong>
-            <span style="font-size:11px;color:var(--g500);margin-left:6px">${r.clientType==='studi'?'Studi':'Lab'}</span>
+            <span style="font-size:11px;color:var(--g500);margin-left:6px">${r.listino==='studi'?'Studi':'Lab'}</span>
           </div>
           <button class="btn btn-red btn-sm" onclick="pkgRemoveRiga('${r.id}')" title="Elimina riga">&#215;</button>
         </div>
-        <div class="pkg-riga-listino">P. Listino: <strong>${eur(r.listino)}</strong></div>
+        <div class="pkg-riga-listino">P. Listino: <strong>${eur(r.prezzoListino)}</strong></div>
         <div class="row2" style="margin-bottom:4px">
           <div class="fg" style="margin-bottom:0">
             <label>Sconto (%)</label>
-            <input type="number" min="0" max="100" step="0.1" value="${(r.sconto||0).toFixed(1)}"
+            <input type="number" min="0" max="100" step="0.1" value="${(r.scontoPerc||0).toFixed(1)}"
               style="font-size:16px;font-weight:700"
               oninput="pkgUpdateScontoInline('${r.id}',this.value,'${offId}','${totId}')">
           </div>
           <div class="fg" style="margin-bottom:0">
             <label>Volume / mese</label>
-            <input type="number" min="1" step="1" value="${r.volume}"
+            <input type="number" min="1" step="1" value="${r.volumeMese}"
               oninput="pkgUpdateVolumeInline('${r.id}',this.value,'${totId}')">
           </div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding-top:8px;border-top:1px solid var(--g100)">
-          <span>P. Offerta: <strong id="${offId}">${eur(r.offerta)}</strong></span>
-          <span>Tot. mensile: <strong id="${totId}">${eur(r.offerta*r.volume)}</strong></span>
+          <span>P. Offerta: <strong id="${offId}">${eur(r.prezzoOfferta)}</strong></span>
+          <span>Tot. mensile: <strong id="${totId}">${eur(r.prezzoOfferta*r.volumeMese)}</strong></span>
         </div>
       </div>`;
     }).join('');
@@ -2145,17 +2205,34 @@ function pkgLoadPkg(id){
     if(!confirm('Caricare questa offerta? Le modifiche non salvate andranno perse.')){ return; }
   }
   P.pkg = JSON.parse(JSON.stringify(h));
-  // Backward compat: righe salvate con vecchio schema (offerta, no sconto)
+  // Migrate righe to new field names (backward compat)
   P.pkg.righe = P.pkg.righe.map(r=>{
-    if(r.sconto === undefined){
-      r.sconto = r.listino > 0 ? parseFloat(((1 - r.offerta/r.listino)*100).toFixed(1)) : 0;
+    // migrate old field names → new
+    if(r.listino !== undefined && typeof r.listino !== 'string'){
+      r.prezzoListino = r.listino; delete r.listino;
     }
-    r.offerta = r.listino * (1 - r.sconto/100);
+    if(r.clientType !== undefined){ r.listino = r.clientType; delete r.clientType; }
+    if(r.catId      !== undefined){ r.categoriaId = r.catId; delete r.catId; }
+    if(r.modVal     !== undefined){ r.modalita = r.modVal; delete r.modVal; }
+    if(r.matNome    !== undefined){ r.materialeNome = r.matNome; delete r.matNome; }
+    if(r.sconto     !== undefined){ r.scontoPerc = r.sconto; delete r.sconto; }
+    if(r.offerta    !== undefined){ r.prezzoOfferta = r.offerta; delete r.offerta; }
+    if(r.volume     !== undefined){ r.volumeMese = r.volume; delete r.volume; }
+    // ensure prezzoListino is set
+    if(r.prezzoListino === undefined) r.prezzoListino = 0;
+    // recalculate prezzoOfferta
+    if(r.scontoPerc === undefined) r.scontoPerc = 0;
+    r.prezzoOfferta = r.prezzoListino * (1 - r.scontoPerc/100);
+    if(r.volumeMese === undefined) r.volumeMese = 1;
     return r;
   });
   pkgSwitchView('edit');
   renderPkgEdit();
   updateStickyPkg();
+  // Ripopola form con l'ultima riga caricata
+  if(P.pkg.righe.length > 0){
+    pkgRestoreFormFromRiga(P.pkg.righe[P.pkg.righe.length-1]);
+  }
 }
 
 function pkgDeletePkg(id){
@@ -2188,8 +2265,8 @@ function renderPkgHistory(){
 
   const items = hist.map(h=>{
     const rs = h.righe||[];
-    const totMens = rs.reduce((s,r)=>s+r.offerta*r.volume,0);
-    const scontoMedio = rs.length ? rs.reduce((s,r)=>s+(r.sconto||0),0)/rs.length : 0;
+    const totMens = rs.reduce((s,r)=>s+(r.prezzoOfferta??r.offerta??0)*(r.volumeMese??r.volume??1),0);
+    const scontoMedio = rs.length ? rs.reduce((s,r)=>s+(r.scontoPerc??r.sconto??0),0)/rs.length : 0;
     return `
     <div class="pkg-hist-item">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:8px">
@@ -2287,9 +2364,9 @@ function exportPkgPdf(){
   // TABLE ROWS
   let grandTotMens = 0;
   P.pkg.righe.forEach((r,i)=>{
-    const sc      = r.sconto||0;
-    const offerta = r.listino * (1 - sc/100);
-    const totRiga = offerta * r.volume;
+    const sc      = r.scontoPerc||0;
+    const offerta = r.prezzoOfferta;
+    const totRiga = offerta * r.volumeMese;
     grandTotMens += totRiga;
     const lines = doc.splitTextToSize(r.desc, C2.desc.w-2);
     const rh = Math.max(8, lines.length*4.5+2);
@@ -2299,7 +2376,7 @@ function exportPkgPdf(){
     doc.text(lines, C2.desc.x, y+5);
     // P. Listino (grigio)
     tc(GRAY); sf('normal',7);
-    doc.text(eur(r.listino), C2.list.x+C2.list.w, y+5, {align:'right'});
+    doc.text(eur(r.prezzoListino), C2.list.x+C2.list.w, y+5, {align:'right'});
     // Sconto % — mostra — se 0
     sf('bold',7);
     if(sc < 0.05){
@@ -2314,7 +2391,7 @@ function exportPkgPdf(){
     doc.text(eur(offerta), C2.off.x+C2.off.w, y+5, {align:'right'});
     // Vol.
     sf('normal',7); tc(DARK);
-    doc.text(String(r.volume), C2.vol.x+C2.vol.w, y+5, {align:'right'});
+    doc.text(String(r.volumeMese), C2.vol.x+C2.vol.w, y+5, {align:'right'});
     // Tot. mensile
     sf('bold',7);
     doc.text(eur(totRiga), C2.tot.x+C2.tot.w, y+5, {align:'right'});
@@ -2334,15 +2411,22 @@ function exportPkgPdf(){
   y+=6;
 
   // DISCLAIMER COMPONENTISTICA
-  newPageIfNeeded(18);
+  const pkgImpTxt1 = 'I prezzi indicati nel pacchetto si riferiscono esclusivamente alla lavorazione selezionata. Non sono inclusi nell\'offerta scontata: progettazione, stampa modello prototipato, analoghi digitali, dima chirurgica, o qualsiasi altro servizio o componente aggiuntivo.';
+  const pkgImpTxt2 = 'La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 esclusa e verr\u00e0 fatturata separatamente.';
+  const pkgImpLines1 = doc.splitTextToSize(pkgImpTxt1, cW-8);
+  const pkgImpLines2 = doc.splitTextToSize(pkgImpTxt2, cW-8);
+  const pkgImpH = 7 + (pkgImpLines1.length + pkgImpLines2.length) * 3.8;
+  newPageIfNeeded(pkgImpH+6);
   y+=4;
-  fill(ML,y,cW,14,[255,247,237]);
-  doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,14,'S');
+  fill(ML,y,cW,pkgImpH,[255,247,237]);
+  doc.setDrawColor(254,215,170); doc.rect(ML,y,cW,pkgImpH,'S');
   sf('bold',8); doc.setTextColor(194,65,12);
   doc.text('\u26a0 IMPORTANTE:',ML+3,y+5);
   sf('normal',7.5); doc.setTextColor(194,65,12);
-  doc.text('La componentistica implantare (monconi, viti, abutment ecc.) \u00e8 ESCLUSA da tutti i prezzi indicati e verr\u00e0 fatturata separatamente.',ML+3,y+11);
-  y+=18;
+  let pkgIy = y+9;
+  doc.text(pkgImpLines1,ML+3,pkgIy); pkgIy += pkgImpLines1.length*3.8+1;
+  doc.text(pkgImpLines2,ML+3,pkgIy);
+  y+=pkgImpH+2;
   hline(y); y+=5;
   sf('italic',7); tc(GRAY);
   const validStr = P.pkg.validita ? `Offerta valida fino al ${P.pkg.validita}` : 'Verificare la validit\u00e0 con il commerciale di riferimento';

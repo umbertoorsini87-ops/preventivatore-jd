@@ -458,15 +458,15 @@ function forceUpdate(){
 /* =====================================================================
    VERSIONING
 ===================================================================== */
-const APP_VERSION = "1.1.0";
-const APP_DATE    = "2026-04-05";
+const APP_VERSION = "1.2.0";
+const APP_DATE    = "2026-04-07";
 
 /* =====================================================================
    DATA — STUDI Rev.08
 ===================================================================== */
 const STUDI = [
   {
-    id:'s1', nome:'Corona/Ponte su Moncone Naturale', iva:0, giorni:'5-7',
+    id:'s1', nome:'Corona/Ponte su Moncone Naturale', iva:0, giorniD:'4-5', giorniA:'5-6',
     tipo:'std_el', mod:['Digitale','Analogica'],
     mat:[
       {nome:'Zirconia',d:70,a:90},
@@ -478,7 +478,7 @@ const STUDI = [
     ]
   },
   {
-    id:'s2', nome:'Corona/Ponte su Ti-Base', iva:0, giorni:'5-7',
+    id:'s2', nome:'Corona/Ponte su Ti-Base', iva:0, giorniD:'4-5', giorniA:'5-6',
     tipo:'std_el', mod:['Digitale','Analogica'],
     mat:[
       {nome:'Zirconia',d:70,a:90},
@@ -488,22 +488,22 @@ const STUDI = [
     ]
   },
   {
-    id:'s3', nome:'Corona/Ponte Avvitato', iva:0, giorni:'5-7',
+    id:'s3', nome:'Corona/Ponte Avvitato', iva:0, giorniD:'4', giorniA:'5',
     tipo:'std_el', mod:['Digitale','Analogica'],
     mat:[{nome:'Titanio Fresato + Composito',d:80,a:100}]
   },
   {
-    id:'s4', nome:'Full Arch Avvitata Diretta', iva:0, giorni:'10-14',
+    id:'s4', nome:'Full Arch Avvitata Diretta', iva:0, giorniD:'8', giorniA:'10',
     tipo:'std_arcata', mod:['Digitale','Analogica'],
     mat:[
       {nome:'Barra Titanio + Composito',d:850,a:900},
       {nome:'Barra Titanio + Zirconia',d:1150,a:1200},
     ]
   },
-  {id:'s5', nome:'Prova Jig', iva:22, giorni:'3-5', tipo:'prova_jig'},
+  {id:'s5', nome:'Prova Jig', iva:22, giorniD:'4', giorniA:'5', tipo:'prova_jig', mod:['Digitale','Analogica']},
   {id:'s6', nome:'Chirurgia Guidata', iva:22, giorni:null, tipo:'chirurgia'},
   {id:'s7', nome:'Chirurgia Guidata Zigomatica', iva:22, giorni:'7-10', tipo:'zigomatica'},
-  {id:'s8', nome:'Stampa 3D', iva:22, giorni:'2-3', tipo:'stampa3d'},
+  {id:'s8', nome:'Stampa 3D', iva:22, giorni:'2', tipo:'stampa3d'},
 ];
 
 const STAMPA3D_VOCI = [
@@ -511,7 +511,7 @@ const STAMPA3D_VOCI = [
   {nome:'Modello emiarcata',prezzo:12},
   {nome:'Modello arcata + antagonista',prezzo:30},
   {nome:'Modello emiarcata + antagonista',prezzo:22},
-  {nome:'Progettazione modello arcata',prezzo:16},
+  {nome:'Progettazione modello arcata',prezzo:16,giorni:'1'},
   {nome:'DIMA senza boccole',prezzo:40},
   {nome:'Biomodello + segmentazione',prezzo:200},
 ];
@@ -808,7 +808,7 @@ function calcStampa3D(cat){
   const voce = STAMPA3D_VOCI[idx];
   const qty = safeInt(document.getElementById('inp-el')?.value,1);
   if(!voce) return {total:0,valid:false};
-  return {unit:voce.prezzo,qty,total:voce.prezzo*qty,desc:`Stampa 3D — ${voce.nome}`,valid:true};
+  return {unit:voce.prezzo,qty,total:voce.prezzo*qty,desc:`Stampa 3D — ${voce.nome}`,valid:true,giorniOverride:voce.giorni};
 }
 
 /* =====================================================================
@@ -842,6 +842,16 @@ function addOrUpdate(){
   const r = calcPrice(cat);
   if(!r.valid){ alert(r.errMsg||'Dati non validi. Controlla i campi.'); return; }
 
+  let itemGiorni;
+  if(r.giorniOverride !== undefined){
+    itemGiorni = r.giorniOverride;
+  } else if(cat.giorniD !== undefined && cat.giorniA !== undefined){
+    const modSel = getPillVal('pills-mod');
+    itemGiorni = modSel==='Digitale' ? cat.giorniD : cat.giorniA;
+  } else {
+    itemGiorni = cat.giorni;
+  }
+
   const item = {
     id: S.editingId || uid(),
     catId: cat.id,
@@ -850,7 +860,7 @@ function addOrUpdate(){
     qty: r.qty,
     vatRate: cat.iva,
     total: r.total,
-    giorni: cat.giorni,
+    giorni: itemGiorni,
     disc: r.disc||0,
   };
 
@@ -906,7 +916,7 @@ function editItem(id){
 function quickAddModelloArcata(){
   S.items.push({
     id:uid(), catId:'s8', desc:'Stampa 3D — Modello Arcata',
-    unit:22, qty:1, vatRate:22, total:22, giorni:'2-3', disc:0
+    unit:22, qty:1, vatRate:22, total:22, giorni:'2', disc:0
   });
   renderQuote(); renderTotals();
 }
@@ -918,7 +928,7 @@ function quickAddGengiva(){
   if(isNaN(v)||v<0){ alert('Prezzo non valido.'); return; }
   S.items.push({
     id:uid(), catId:'s8', desc:'Stampa 3D — Gengiva',
-    unit:v, qty:1, vatRate:22, total:v, giorni:'2-3', disc:0
+    unit:v, qty:1, vatRate:22, total:v, giorni:'2', disc:0
   });
   renderQuote(); renderTotals();
 }
